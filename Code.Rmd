@@ -13,16 +13,27 @@ library(ggplot2)
 ```
 
 # Design a set of distributions/models under both proportional-hazard and non-proportional-hazard assumptions
+(reference link: https://spia.uga.edu/faculty_pages/rbakker/pols8501/OxfordThreeNotes.pdf)
+
 ## proportional-hazard
-The Cox proportional hazards model does not assume a particular baseline hazard function $h_0(t)$ but the proportional relation between groups and baseline.
+### Cox proportional hazards model
+does not assume a particular baseline hazard function $h_0(t)$ but the proportional relation between groups and baseline.
 $$
 h_i(t) = h_0(t) \exp[\beta_1 X_{i1} + \beta_2 X_{i2} + \ldots + \beta_p X_{ip}]
 $$
 
-
-## non-proportional-hazard
-The Weibull proportional hazards model assumes a specific functional form for the hazard rate, which can either increase or decrease over time. Its shape parameter distinctly describes whether the hazard rate is increasing, decreasing, or constant.
+### Weibull proportional hazards model
+assumes a specific functional form for the hazard rate, which can either increase or decrease over time. Its shape parameter distinctly describes whether the hazard rate is increasing, decreasing, or constant.
 $$
 h_i(t) = \lambda \gamma t^{\gamma - 1} \exp[\beta_1 X_{i1} + \beta_2 X_{i2} + \ldots + \beta_p X_{ip}]
 $$
 where $\lambda$ is the scale parameter, and $\gamma$ is the shape parameter.
+
+
+## non-proportional-hazard
+### AFT model
+(https://www.jstor.org/stable/pdf/2532512.pdf)
+$$
+\lambda(t|\theta) = \theta \lambda_0(\theta t)
+$$
+where $\theta$ denotes the joint effect of covariates,typically $\theta = \exp(-[\beta_{1}X_{1}+ ... +\beta_{p}X_{p}])$.
