@@ -31,9 +31,4 @@ where $\lambda$ is the scale parameter, and $\gamma$ is the shape parameter.
 
 
 ## non-proportional-hazard
-### AFT model
-(https://www.jstor.org/stable/pdf/2532512.pdf)
-$$
-\lambda(t|\theta) = \theta \lambda_0(\theta t)
-$$
-where $\theta$ denotes the joint effect of covariates,typically $\theta = \exp(-[\beta_{1}X_{1}+ ... +\beta_{p}X_{p}])$.
+### Weibull accelerated failure time model
