@@ -1,21 +1,108 @@
 ---
 title: "Group Project 1"
 author: "Huanyu Chen, Shaolei Ma, Ruiqi Xue"
-date: "2024-02-14"
+date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(survival)
-library(survminer)
-library(ggplot2)
+library(nph)
+library(tidyverse)
+library(dplyr)
+
+knitr::opts_chunk$set(
+  fig.width = 8,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
 # Design a set of distributions/models under both proportional-hazard and non-proportional-hazard assumptions
 (reference link: https://spia.uga.edu/faculty_pages/rbakker/pols8501/OxfordThreeNotes.pdf)
 
-## proportional-hazard
+## Proportional-Hazard Assumption
+
+Under proportional-hazards assumption, the hazard function (Cox model) can be written as:
+$$h(t|x)=h_0(t)exp(\beta'x)$$
+where $t$ is the time, $x$ the vector of covariates, $\beta$ the vector of regression coefficients, $h_0(t)$ is the baseline hazard function. Then, the survival function is
+$$S(t|x)=exp[-H_0(t)exp(\beta'x)]$$
+where$$H_0(t)=\int_0^th_0(u)du$$
+Thus, the distribution function is
+$$F(t|x)=1-exp[-H_0(t)exp(\beta'x)]$$
+Let $Y$ be a random variable with distribution function $F$, then $U=F(Y)\sim U[0,1],\,(1-U)\sim U[0,1]$, i.e.
+$$U=exp[-H_0(t)exp(\beta'x)]\sim U[0,1]$$
+if $h_0(t)>0$ for all $t$, then $H_0$ can be inverted and the survival time $T$ of the model can be written as
+$$T=H_0^{-1}[-log(U)exp(-\beta'x)]$$
+where $U\sim U[0,1]$.
+
+To simply the problem, here we only consider one covariate $x$, which indicates whether the sample belongs to the control arm ($x=0$) or the treatment arm ($x=1$), and set a negative $\beta$ under the assumption that the treatment has a consistent positive effect.
+
+Now, we only need to know $H_0^{-1}$ to simulate the survival time. To do so, we consider two commonly used survival time distributions: exponential and Weibull distribution.
+
+For exponential distribution with scale parameter $\lambda>0$, the possibility density function is $$f_0=\lambda exp(-\lambda t)$$
+Then,
+$$F_0(t)=1-exp(-\lambda t)$$
+$$S_0(t)=1-F_0(t)=exp(-\lambda t)$$
+$$H_0(t)=-log(S_0(t))=\lambda t$$
+$$h(t)=H_0'(t)=\lambda>0$$
+$$H_0^{-1}(t)=\lambda^{-1}t$$
+Thus,
+$$T=-\lambda^{-1}log(U)exp(-\beta'x)$$
+where $U\sim U[0,1]$.
+
+For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$
+Then,
+$$F_0(t)=1-exp(-\lambda t^\gamma)$$
+$$S_0(t)=1-F_0(t)=exp(-\lambda t^\gamma)$$
+$$H_0(t)=-log(S_0(t))=\lambda t^\gamma$$
+$$h(t)=H_0'(t)=\lambda\gamma t^{(\gamma-1)}>0$$
+$$H_0^{-1}(t)={(\lambda^{-1}t)}^{1/\gamma}$$
+Thus,
+$$T={(-\lambda^{-1}log(U)exp(-\beta'x))}^{1/\gamma}$$
+where $U\sim U[0,1]$.
+
+We can write the simulation process as follows:
+```{r}
+simulate_func = function(n, baseline, params = list(), coveff)
+{
+  # Simulate treatment indicator variable
+  x = rbinom(n = n, size = 1, prob = 0.5)
+  # Draw from a U(0,1) random variable
+  u = runif(n)
+  # Simulate survival times depending on the baseline hazard
+  if (baseline == "Exponential") {
+    t = -log(u) / (params$lambda * exp(x * coveff))
+  } else {
+    t = (-log(u) / (params$lambda * exp(x * coveff)))^(1 / params$gamma)
+  }
+  # Make event indicator variable applying administrative censoring at t = 5
+  d = as.numeric(t < 5)
+  t = pmin(t, 5)
+  # Return a data.frame
+  data.frame(x = x, t = t, d = d, n = n, baseline = baseline)
+}
+```
+
+```{r}
+dat = simulate_func(n = 100, baseline = "Exponential",
+                    params = list(lambda = 0.5), coveff = 0.5)
+logrank.test(dat$t, dat$d, dat$x, rho = 0, gamma = 0)
+logrank.test(dat$t, dat$d, dat$x, rho = 1, gamma = 0)
+logrank.test(dat$t, dat$d, dat$x, rho = 0, gamma = 1)
+```
+
+
 ### Cox proportional hazards model
 does not assume a particular baseline hazard function $h_0(t)$ but the proportional relation between groups and baseline.
 $$
@@ -30,5 +117,10 @@ $$
 where $\lambda$ is the scale parameter, and $\gamma$ is the shape parameter.
 
 
-## non-proportional-hazard
+## Non-Proportional-Hazard Assumption
 ### Weibull accelerated failure time model
+
+# Carry out a simulation study to compare performance of those hypothesis tests in those models.
+
+# References
+Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in medicine*, 24(11), 1713–1723. https://doi.org/10.1002/sim.2059
