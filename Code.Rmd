@@ -39,11 +39,11 @@ $$S(t|x)=exp[-H_0(t)exp(\beta'x)]$$
 where$$H_0(t)=\int_0^th_0(u)du$$
 Thus, the distribution function is
 $$F(t|x)=1-exp[-H_0(t)exp(\beta'x)]$$
-Let $Y$ be a random variable with distribution function $F$, then $U=F(Y)\sim U[0,1],\,(1-U)\sim U[0,1]$, i.e.
-$$U=exp[-H_0(t)exp(\beta'x)]\sim U[0,1]$$
+Let $Y$ be a random variable with distribution function $F$, then $U=F(Y)\sim U(0,1),\,(1-U)\sim U(0,1)$, i.e.
+$$U=exp[-H_0(t)exp(\beta'x)]\sim U(0,1)$$
 if $h_0(t)>0$ for all $t$, then $H_0$ can be inverted and the survival time $T$ of the model can be written as
 $$T=H_0^{-1}[-log(U)exp(-\beta'x)]$$
-where $U\sim U[0,1]$.
+where $U\sim U(0,1)$.
 
 To simply the problem, here we only consider one covariate $x$, which indicates whether the sample belongs to the control arm ($x=0$) or the treatment arm ($x=1$), and set a negative $\beta$ under the assumption that the treatment has a consistent positive effect.
 
@@ -58,7 +58,7 @@ $$h(t)=H_0'(t)=\lambda>0$$
 $$H_0^{-1}(t)=\lambda^{-1}t$$
 Thus,
 $$T=-\lambda^{-1}log(U)exp(-\beta'x)$$
-where $U\sim U[0,1]$.
+where $U\sim U(0,1)$.
 
 For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$
 Then,
@@ -69,11 +69,11 @@ $$h(t)=H_0'(t)=\lambda\gamma t^{(\gamma-1)}>0$$
 $$H_0^{-1}(t)={(\lambda^{-1}t)}^{1/\gamma}$$
 Thus,
 $$T={(-\lambda^{-1}log(U)exp(-\beta'x))}^{1/\gamma}$$
-where $U\sim U[0,1]$.
+where $U\sim U(0,1)$.
 
 We can write the simulation process as follows:
 ```{r}
-simulate_func = function(n, baseline, lambda, gamma = NULL, coveff)
+ph_simulate_func = function(n, baseline, lambda, gamma = NULL, coveff)
 {
   # Simulate treatment indicator variable
   x = rbinom(n = n, size = 1, prob = 0.5)
@@ -88,7 +88,7 @@ simulate_func = function(n, baseline, lambda, gamma = NULL, coveff)
     t = (-log(u) / (lambda * exp(x * coveff)))^(1 / gamma)
     censor_time = qweibull(0.8, shape = gamma, scale = lambda)
   }
-  # Make event indicator variable applying administrative censoring at t = 5
+  # Make event indicator variable applying administrative censoring
   d = as.numeric(t < censor_time)
   t = pmin(t, censor_time)
   # Return a tibble object
@@ -110,10 +110,10 @@ wei_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
             beta = c(-0.5, -1, -5))
 
 exp_results =
-  mapply(simulate_func, n = exp_param_df$n, baseline = "Exponential", 
+  mapply(ph_simulate_func, n = exp_param_df$n, baseline = "Exponential", 
          lambda = exp_param_df$lambda, coveff = exp_param_df$beta)
 wei_results = 
-  mapply(simulate_func, n = wei_param_df$n, baseline = "Weibull", 
+  mapply(ph_simulate_func, n = wei_param_df$n, baseline = "Weibull", 
          lambda = wei_param_df$lambda, gamma = wei_param_df$gamma,
          coveff = wei_param_df$beta)
 
@@ -174,25 +174,128 @@ pwr_func = function(list_df, n = 50)
   ph_wei_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
 ```
 
-
-(reference link: https://spia.uga.edu/faculty_pages/rbakker/pols8501/OxfordThreeNotes.pdf)
-
-### Cox proportional hazards model
-does not assume a particular baseline hazard function $h_0(t)$ but the proportional relation between groups and baseline.
-$$
-h_i(t) = h_0(t) \exp[\beta_1 X_{i1} + \beta_2 X_{i2} + \ldots + \beta_p X_{ip}]
-$$
-
-### Weibull proportional hazards model
-assumes a specific functional form for the hazard rate, which can either increase or decrease over time. Its shape parameter distinctly describes whether the hazard rate is increasing, decreasing, or constant.
-$$
-h_i(t) = \lambda \gamma t^{\gamma - 1} \exp[\beta_1 X_{i1} + \beta_2 X_{i2} + \ldots + \beta_p X_{ip}]
-$$
-where $\lambda$ is the scale parameter, and $\gamma$ is the shape parameter.
-
-
 # Non-Proportional-Hazard Assumption
-### Weibull accelerated failure time model
+
+## Late Effect
+We first consider the late effect scenario, in which the treatment arm is supposed to have a lower hazard ratio as time increases. To simplify the problem, we set the baseline hazard function to be a constant $\lambda_0=0.5$, which indicates that the survival time for the control arm follows exponential distribution. For the treatment arm, we consider two scenarios.
+
+### Piecewise Exponential Model
+Suppose the hazard function for the treatment arm is:
+$$h(t|x=1)=\left\{
+\begin{aligned}
+\lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1
+\end{aligned}
+\right.$$
+Then, $$H(t|x=1)=\left\{
+\begin{aligned}
+\lambda_0 t & & t<1 \\ (\lambda_0+\lambda_1)t-\lambda_1 & & t\geq 1
+\end{aligned}
+\right.$$
+$$S(t|x=1)=exp(-H(t|x=1))=\left\{
+\begin{aligned}
+exp(-\lambda_0 t) & & t<1 \\ exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
+\end{aligned}
+\right.$$
+$$F(t|x=1)=1-S(t|x=1)=\left\{
+\begin{aligned}
+1-exp(-\lambda_0 t) & & t<1 \\ 1-exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
+\end{aligned}
+\right.$$
+Let $1-U=F(t|x=1)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=1)\sim U(0,1)$. Thus,
+$$T=\left\{
+\begin{aligned}
+-\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\
+\frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0)
+\end{aligned}
+\right.$$
+
+With the distribution function of survival times, we can write the simulation process as follows (note: for early effect piecewise models, the expression for all functions are similar except for the definition domains, so the simulation process is similar and we write it down as well.)
+```{r}
+piecewise_sim_func = function(n, lambda0 = 0.5, lambda1, type)
+{
+  # Set the administrative censoring time to guarantee a censor rate of 0.2 for control arm
+  censor_time = qexp(0.8, rate = lambda0)
+  
+  u0 = runif(n)
+  t0 = - log(u0) / lambda0
+  u1 = runif(n)
+  if(type == "late")
+    t1 = (u1 > exp(-lambda0)) * (-log(u1) / lambda0) +
+    (u1 <= exp(-lambda0)) * ((lambda1 - log(u1)) / (lambda0 + lambda1))
+  else if(type == "early")
+    t1 = (u1 <= exp(-lambda0)) * (-log(u1) / lambda0) +
+    (u1 > exp(-lambda0)) * ((lambda1 - log(u1)) / (lambda0 + lambda1))
+  
+  # Make event indicator variable applying administrative censoring
+  d0 = as.numeric(t0 < censor_time)
+  d1 = as.numeric(t1 < censor_time)
+  t0 = pmin(t0, censor_time)
+  t1 = pmin(t1, censor_time)
+  
+  control_df = tibble(x = rep(0, n), t = t0, d = d0, n, lambda0, lambda1)
+  treat_df = tibble(x = rep(1, n), t = t1, d = d1, n, lambda0, lambda1)
+  return(rbind(control_df, treat_df))
+}
+```
+
+```{r}
+late_pw_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+            lambda0 = c(0.5, 0.8), lambda1 = c(0.3, 0.4))
+
+late_pw_results =
+  mapply(piecewise_sim_func, n = late_pw_param_df$n,
+         lambda0 = late_pw_param_df$lambda0, lambda1 = late_pw_param_df$lambda1,
+         type = "late")
+
+late_pw_df = tibble()
+
+for(i in 1:ncol(late_pw_results))
+{
+  a = late_pw_results[, i]
+  late_pw_df = cbind.data.frame(x = a$x, t = a$t, d = a$d, n = a$n, 
+                                lambda0 = a$lambda0, lambda1 = a$lambda1) |> 
+    as_tibble() |> nest(data = c(x : d)) |> rbind(late_pw_df)
+}
+
+late_pw_df = late_pw_df |> nest(simulations = c(data))
+```
+
+Under different settings, we want to test the $H_0:$ there is no difference in survival between the treatment and control arm. Therefore, we use three different log-rank tests and compare the test power at the 0.05 significance level.
+
+```{r}
+(late_pw_df = 
+  late_pw_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
+```
+
+```{r}
+early_pw_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+            lambda0 = c(0.5, 0.8), lambda1 = c(0.3, 0.4))
+
+early_pw_results =
+  mapply(piecewise_sim_func, n = early_pw_param_df$n,
+         lambda0 = early_pw_param_df$lambda0, lambda1 = early_pw_param_df$lambda1,
+         type = "early")
+
+early_pw_df = tibble()
+
+for(i in 1:ncol(early_pw_results))
+{
+  a = early_pw_results[, i]
+  early_pw_df = cbind.data.frame(x = a$x, t = a$t, d = a$d, n = a$n, 
+                                lambda0 = a$lambda0, lambda1 = a$lambda1) |> 
+    as_tibble() |> nest(data = c(x : d)) |> rbind(early_pw_df)
+}
+
+early_pw_df = early_pw_df |> nest(simulations = c(data))
+```
+
+Under different settings, we want to test the $H_0:$ there is no difference in survival between the treatment and control arm. Therefore, we use three different log-rank tests and compare the test power at the 0.05 significance level.
+
+```{r}
+(early_pw_df = 
+  early_pw_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
+```
 
 # References
-Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in medicine*, 24(11), 1713–1723. https://doi.org/10.1002/sim.2059
+Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in medicine, 24*(11), 1713–1723. https://doi.org/10.1002/sim.2059
+Austin P. C. (2012). Generating survival times to simulate Cox proportional hazards models with time-varying covariates. *Statistics in medicine, 31*(29), 3946–3958. https://doi.org/10.1002/sim.5452
