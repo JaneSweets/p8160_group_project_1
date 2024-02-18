@@ -26,12 +26,11 @@ options(
 
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
+
+set.seed(2024)
 ```
 
-# Design a set of distributions/models under both proportional-hazard and non-proportional-hazard assumptions
-(reference link: https://spia.uga.edu/faculty_pages/rbakker/pols8501/OxfordThreeNotes.pdf)
-
-## Proportional-Hazard Assumption
+# Proportional-Hazard Assumption
 
 Under proportional-hazards assumption, the hazard function (Cox model) can be written as:
 $$h(t|x)=h_0(t)exp(\beta'x)$$
@@ -74,7 +73,7 @@ where $U\sim U[0,1]$.
 
 We can write the simulation process as follows:
 ```{r}
-simulate_func = function(n, baseline, params = list(), coveff)
+simulate_func = function(n, baseline, lambda, gamma = NULL, coveff)
 {
   # Simulate treatment indicator variable
   x = rbinom(n = n, size = 1, prob = 0.5)
@@ -82,26 +81,101 @@ simulate_func = function(n, baseline, params = list(), coveff)
   u = runif(n)
   # Simulate survival times depending on the baseline hazard
   if (baseline == "Exponential") {
-    t = -log(u) / (params$lambda * exp(x * coveff))
-  } else {
-    t = (-log(u) / (params$lambda * exp(x * coveff)))^(1 / params$gamma)
+    t = -log(u) / (lambda * exp(x * coveff))
+    # Set the administrative censoring time to guarantee a censor rate of 0.2
+    censor_time = qexp(0.8, rate = lambda)
+  } else if(baseline == "Weibull") {
+    t = (-log(u) / (lambda * exp(x * coveff)))^(1 / gamma)
+    censor_time = qweibull(0.8, shape = gamma, scale = lambda)
   }
   # Make event indicator variable applying administrative censoring at t = 5
-  d = as.numeric(t < 5)
-  t = pmin(t, 5)
-  # Return a data.frame
-  data.frame(x = x, t = t, d = d, n = n, baseline = baseline)
+  d = as.numeric(t < censor_time)
+  t = pmin(t, censor_time)
+  # Return a tibble object
+  if (baseline == "Exponential") {
+    return(tibble(x, t, d, n, baseline, lambda, coveff))
+  } else if(baseline == "Weibull") {
+    return(tibble(x, t, d, n, baseline, lambda, gamma, coveff))
+  }
 }
 ```
 
+To observe the potential relevance between test performance and number of samples ($n$), parameter value ($\lambda,\,\gamma$), and coefficient $\beta$, we set $n=50,\,100,\,200$, $\lambda=0,\,0.5,\,1$, $\gamma=0,\,0.5,\,1$, and $\beta=0,\,1,\,2$. We repeat 50 times for each value setting. The generation process is written as follows:
+
 ```{r}
-dat = simulate_func(n = 100, baseline = "Exponential",
-                    params = list(lambda = 0.5), coveff = 0.5)
-logrank.test(dat$t, dat$d, dat$x, rho = 0, gamma = 0)
-logrank.test(dat$t, dat$d, dat$x, rho = 1, gamma = 0)
-logrank.test(dat$t, dat$d, dat$x, rho = 0, gamma = 1)
+exp_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+            lambda = c(0.5, 0.8, 1), beta = c(-0.5, -1, -5))
+wei_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+            lambda = c(0.5, 0.8, 1), gamma = c(0.5, 0.8, 1), 
+            beta = c(-0.5, -1, -5))
+
+exp_results =
+  mapply(simulate_func, n = exp_param_df$n, baseline = "Exponential", 
+         lambda = exp_param_df$lambda, coveff = exp_param_df$beta)
+wei_results = 
+  mapply(simulate_func, n = wei_param_df$n, baseline = "Weibull", 
+         lambda = wei_param_df$lambda, gamma = wei_param_df$gamma,
+         coveff = wei_param_df$beta)
+
+ph_exp_df = tibble()
+ph_wei_df = tibble()
+
+for(i in 1:ncol(exp_results))
+{
+  a = exp_results[, i]
+  ph_exp_df = cbind.data.frame(x = a$x, t = a$t, d = a$d, n = a$n,
+                               baseline = "Exponential", lambda = a$lambda, 
+                               beta = a$coveff) |> as_tibble() |> 
+    nest(data = c(x : d)) |> rbind(ph_exp_df)
+}
+
+for(i in 1:ncol(wei_results))
+{
+  a = wei_results[, i]
+  ph_wei_df = 
+    cbind.data.frame(x = a$x, t = a$t, d = a$d, n = a$n, baseline = "Weibull",
+          lambda = a$lambda, gamma = a$gamma, beta = a$coveff) |>
+    as_tibble() |> nest(data = c(x : d)) |> rbind(ph_wei_df)
+}
+
+ph_exp_df = ph_exp_df |> nest(simulations = c(data))
+ph_wei_df = ph_wei_df |> nest(simulations = c(data))
 ```
 
+Under different settings, we want to test the $H_0:$ there is no difference in survival between the treatment and control arm. Therefore, we use three different log-rank tests and compare the test power at the 0.05 significance level.
+
+```{r}
+pwr_func = function(list_df, n = 50)
+{
+  test1_reject = 0
+  test2_reject = 0
+  test3_reject = 0
+  for(j in 1:nrow(list_df)) {
+    dat = list_df |> slice(j) |> unnest(cols = c(data))
+    test_results = logrank.maxtest(dat$t, dat$d, dat$x)
+    test1_reject = test1_reject + 
+      ((test_results$tests |> filter(Test == 1) |> pull(p)) < 0.05)
+    test2_reject = test2_reject + 
+      ((test_results$tests |> filter(Test == 2) |> pull(p)) < 0.05)
+    test3_reject = test3_reject + 
+      ((test_results$tests |> filter(Test == 3) |> pull(p)) < 0.05)
+  }
+  return(
+    tibble(
+      test1_power = test1_reject / n,
+      test2_power = test2_reject / n,
+      test3_power = test3_reject / n
+    )
+  )
+}
+(ph_exp_df = 
+  ph_exp_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
+(ph_wei_df = 
+  ph_wei_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
+```
+
+
+(reference link: https://spia.uga.edu/faculty_pages/rbakker/pols8501/OxfordThreeNotes.pdf)
 
 ### Cox proportional hazards model
 does not assume a particular baseline hazard function $h_0(t)$ but the proportional relation between groups and baseline.
@@ -117,10 +191,8 @@ $$
 where $\lambda$ is the scale parameter, and $\gamma$ is the shape parameter.
 
 
-## Non-Proportional-Hazard Assumption
+# Non-Proportional-Hazard Assumption
 ### Weibull accelerated failure time model
-
-# Carry out a simulation study to compare performance of those hypothesis tests in those models.
 
 # References
 Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in medicine*, 24(11), 1713–1723. https://doi.org/10.1002/sim.2059
