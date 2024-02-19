@@ -6,10 +6,10 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(nph)
 library(tidyverse)
 library(dplyr)
+library(ggplot2)
 
 knitr::opts_chunk$set(
   fig.width = 8,
@@ -28,6 +28,18 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 
 set.seed(2024)
+```
+
+```{r plot function, include=FALSE}
+hazard_plot = function(func1, func2, t_max, title)
+{
+  ggplot() + 
+    xlim(0, t_max) + xlab("t") + ylab("hazard") +
+    geom_function(fun = func1, aes(lty = "control")) +
+    geom_function(fun = func2, aes(lty = "treatment")) +
+    scale_linetype_manual(values = c(1, 2)) +
+    labs(title = title)
+}
 ```
 
 # Proportional-Hazard Assumption
@@ -60,6 +72,15 @@ Thus,
 $$T=-\lambda^{-1}log(U)exp(-\beta'x)$$
 where $U\sim U(0,1)$.
 
+The hazard function under $\lambda=0.5,\,\beta=-0.5$ could be shown as follows:
+```{r, echo = FALSE}
+control_func = function(t) return(0.5)
+treatment_func = function(t) return(0.5 * exp(-0.5))
+
+hazard_plot(control_func, treatment_func, 5, 
+            "Proportional-Hazard Function for Exponential Models")
+```
+
 For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$
 Then,
 $$F_0(t)=1-exp(-\lambda t^\gamma)$$
@@ -70,6 +91,16 @@ $$H_0^{-1}(t)={(\lambda^{-1}t)}^{1/\gamma}$$
 Thus,
 $$T={(-\lambda^{-1}log(U)exp(-\beta'x))}^{1/\gamma}$$
 where $U\sim U(0,1)$.
+
+The hazard function under $\lambda=0.5,\,\gamma=1.2,\,\beta=-0.5$ could be shown as follows:
+```{r, echo = FALSE}
+control_func = function(t) return(0.5 * 1.2 * t ^ (1.2 - 1))
+treatment_func = function(t)
+  return(0.5 * 1.2 * t ^ (1.2 - 1) * exp(-0.5))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Proportional-Hazard Function for Weibull Models")
+```
 
 We can write the simulation process as follows:
 ```{r}
@@ -100,13 +131,13 @@ ph_simulate_func = function(n, baseline, lambda, gamma = NULL, coveff)
 }
 ```
 
-To observe the potential relevance between test performance and number of samples ($n$), parameter value ($\lambda,\,\gamma$), and coefficient $\beta$, we set $n=50,\,100,\,200$, $\lambda=0,\,0.5,\,1$, $\gamma=0,\,0.5,\,1$, and $\beta=0,\,1,\,2$. We repeat 50 times for each value setting. The generation process is written as follows:
+To observe the potential relevance between test performance and number of samples ($n$), parameter value ($\lambda,\,\gamma$), and coefficient $\beta$, we set $n=50,\,100,\,200$, $\lambda=0,\,0.5,\,1$, $\gamma=1.2,\,1.5$, and $\beta=0,\,1,\,2$. We repeat 50 times for each value setting. The generation process is written as follows:
 
 ```{r}
 exp_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
             lambda = c(0.5, 0.8, 1), beta = c(-0.5, -1, -5))
 wei_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
-            lambda = c(0.5, 0.8, 1), gamma = c(0.5, 0.8, 1), 
+            lambda = c(0.5, 0.8, 1), gamma = c(1.2, 1.5), 
             beta = c(-0.5, -1, -5))
 
 exp_results =
@@ -176,11 +207,14 @@ pwr_func = function(list_df, n = 50)
 
 # Non-Proportional-Hazard Assumption
 
-## Late Effect
-We first consider the late effect scenario, in which the treatment arm is supposed to have a lower hazard ratio as time increases. To simplify the problem, we set the baseline hazard function to be a constant $\lambda_0=0.5$, which indicates that the survival time for the control arm follows exponential distribution. For the treatment arm, we consider two scenarios.
+Under NPH assumption, we still consider the exponential model and weibull model.
 
-### Piecewise Exponential Model
-Suppose the hazard function for the treatment arm is:
+## Piecewise Exponential Model
+
+To simplify the problem, we set the baseline hazard function to be a constant $\lambda_0=0.5$, which indicates that the survival time for the control arm follows exponential distribution.
+
+### Late Effect
+For the treatment arm, we suppose the hazard function for the treatment arm is:
 $$h(t|x=1)=\left\{
 \begin{aligned}
 \lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1
@@ -208,6 +242,15 @@ $$T=\left\{
 \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0)
 \end{aligned}
 \right.$$
+
+The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
+```{r, echo = FALSE}
+control_func = function(t) return(0.5)
+treatment_func = function(t) return(0.5 * (t < 1) + 0.3 * (t >= 1))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Non-Proportional-Hazard Function for Late-Effect Exponential Models")
+```
 
 With the distribution function of survival times, we can write the simulation process as follows (note: for early effect piecewise models, the expression for all functions are similar except for the definition domains, so the simulation process is similar and we write it down as well.)
 ```{r}
@@ -267,6 +310,32 @@ Under different settings, we want to test the $H_0:$ there is no difference in s
   late_pw_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
 ```
 
+### Early Effect
+
+We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes:
+$$h(t|x=1)=\left\{
+\begin{aligned}
+\lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1
+\end{aligned}
+\right.$$
+Similarly, it can be derived that
+$$T=\left\{
+\begin{aligned}
+-\lambda_0^{-1}log(U) & & U\leq exp(-\lambda_0) \\
+\frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U>exp(-\lambda_0)
+\end{aligned}
+\right.$$
+where $U\sim U(0,1)$.
+
+The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
+```{r, echo = FALSE}
+control_func = function(t) return(0.5)
+treatment_func = function(t) return(0.5 * (t >= 1) + 0.3 * (t < 1))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Non-Proportional-Hazard Function for Early-Effect Exponential Models")
+```
+
 ```{r}
 early_pw_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
             lambda0 = c(0.5, 0.8), lambda1 = c(0.3, 0.4))
@@ -294,6 +363,96 @@ Under different settings, we want to test the $H_0:$ there is no difference in s
 ```{r}
 (early_pw_df = 
   early_pw_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
+```
+
+## Weibull Model
+To simplify the problem, we assume the control and treatment arm share the same scale parameter $\lambda$. For the control arm, suppose the hazard function is:
+$$h(t|x=0)=\lambda\gamma_0 t^{(\gamma_0-1)}.$$
+Then, $$H(t|x=0)=\lambda t^\gamma_0$$
+$$S(t|x=0)=exp(-H(t|x=0))=exp(-\lambda t^\gamma_0)$$
+$$F(t|x=0)=1-S(t|x=0)=1-exp(-\lambda t^\gamma_0)$$
+Let $1-U=F(t|x=0)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=0)\sim U(0,1)$. Thus,
+$$T={(-\lambda^{-1}log(U))}^{1/\gamma_0}$$
+
+Similarly, we can write the hazard function for the treatment arm as:
+$$h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$$
+We can derive that $$T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$$
+
+The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows:
+```{r, echo = FALSE}
+control_func = function(t) return(0.5 * 2 * t ^ (2 - 1))
+treatment_func = function(t) return(0.5 * 1.5 * t ^ (1.5 - 1))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Non-Proportional-Hazard Function for Late-Effect Weibull Models")
+```
+
+With the distribution function of survival times, we can write the simulation process as follows.
+
+```{r}
+weibull_sim_func = function(n, lambda = 0.5, gamma0, gamma1)
+{
+  # Set the administrative censoring time to guarantee a censor rate of 0.2 for control arm
+  censor_time = qweibull(0.8, shape = gamma0, scale = lambda)
+  
+  u0 = runif(n)
+  t0 = (- log(u0) / lambda) ^ (1 / gamma0)
+  u1 = runif(n)
+  t1 = (- log(u1) / lambda) ^ (1 / gamma1)
+  
+  # Make event indicator variable applying administrative censoring
+  d0 = as.numeric(t0 < censor_time)
+  d1 = as.numeric(t1 < censor_time)
+  t0 = pmin(t0, censor_time)
+  t1 = pmin(t1, censor_time)
+  
+  control_df = tibble(x = rep(0, n), t = t0, d = d0, 
+                      n, lambda, gamma0, gamma1)
+  treat_df = tibble(x = rep(1, n), t = t1, d = d1, 
+                    n, lambda, gamma0, gamma1)
+  return(rbind(control_df, treat_df))
+}
+```
+
+```{r}
+late_wei_param_df = 
+  expand.grid(iteration = c(1:50), n = c(50, 100, 200), 
+              lambda = c(0.5, 0.8), gamma0 = c(2, 3), 
+              gamma1 = c(1.5, 1.8))
+
+late_wei_results =
+  mapply(weibull_sim_func, n = late_wei_param_df$n,
+         lambda = late_wei_param_df$lambda,
+         gamma0 = late_wei_param_df$gamma0, gamma1 = late_wei_param_df$gamma1)
+
+late_wei_df = tibble()
+
+for(i in 1:ncol(late_wei_results))
+{
+  a = late_wei_results[, i]
+  late_wei_df = cbind.data.frame(x = a$x, t = a$t, d = a$d, n = a$n, 
+                                lambda = a$lambda, gamma0 = a$gamma0,
+                                gamma1 = a$gamma1) |> 
+    as_tibble() |> nest(data = c(x : d)) |> rbind(late_wei_df)
+}
+
+late_wei_df = late_wei_df |> nest(simulations = c(data))
+```
+
+Under different settings, we want to test the $H_0:$ there is no difference in survival between the treatment and control arm. Therefore, we use three different log-rank tests and compare the test power at the 0.05 significance level.
+
+```{r}
+(late_wei_df = 
+  late_wei_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power))
+```
+
+If set the survival time for the control arm to follow exponential distribution, then the hazard function under $\lambda=1,\,\gamma=1.3$ could be shown as follows:
+```{r, echo = FALSE}
+control_func = function(t) return(1)
+treatment_func = function(t) return(0.5 * 1.3 * t ^ (1.3 - 1))
+
+hazard_plot(control_func, treatment_func, 3,
+            "Non-Proportional-Hazard Function for Early-Effect Models")
 ```
 
 # References
