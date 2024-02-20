@@ -1,0 +1,132 @@
+---
+title: "Group Project 1"
+author: "Huanyu Chen, Shaolei Ma, Ruiqi Xue"
+date: "2024-02-20"
+output:
+  pdf_document:
+    number_sections: true
+---
+
+# Introduction
+
+In clinical trials, treatment efficacy is typically evaluated using time-to-event outcomes and the hazard ratio (HR) under the proportional hazards (PH) assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the PH assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events.
+
+This study examines the performance of three hypothesis tests for time-to-event data: the conventional log-rank test and two variants of the weighted log-rank test. The scenarios considered involve both proportional hazard functions, typical of distributions such as the exponential and Weibull, and non-proportional hazard functions, which may exhibit stepwise changes for the exponential distribution and the accelerated failure time model for the Weibull model. We used Monte Carlo simulation techniques to evaluate the power of hypothesis tests for a range of coefficient values.
+
+Our analysis revealed the comparative effectiveness of these tests under diverse conditions, shedding light on the strengths and limitations of each approach. We found nuanced differences in their ability to detect treatment effects under varying hazard rate dynamics. By clarifying the relative performance of these tests, we aim to provide clinicians and researchers with actionable insights into selecting appropriate statistical methodologies for analyzing time-to-event data. This will enhance the rigor and reliability of clinical trial evaluations.
+
+# Methods
+
+## Proportional-Hazard Assumption
+
+Under proportional-hazards assumption, the hazard function (Cox model) can be written as: $$h(t|x)=h_0(t)exp(\beta'x)$$ where $t$ is the time, $x$ the vector of covariates, $\beta$ the vector of regression coefficients, $h_0(t)$ is the baseline hazard function. Then, the survival function is $$S(t|x)=exp[-H_0(t)exp(\beta'x)]$$ where$$H_0(t)=\int_0^th_0(u)du$$ Thus, the distribution function is $$F(t|x)=1-exp[-H_0(t)exp(\beta'x)]$$ Let $Y$ be a random variable with distribution function $F$, then $U=F(Y)\sim U(0,1),\,(1-U)\sim U(0,1)$, i.e. $$U=exp[-H_0(t)exp(\beta'x)]\sim U(0,1)$$ if $h_0(t)>0$ for all $t$, then $H_0$ can be inverted and the survival time $T$ of the model can be written as $$T=H_0^{-1}[-log(U)exp(-\beta'x)]$$ where $U\sim U(0,1)$.
+
+To simply the problem, here we only consider one covariate $x$, which indicates whether the sample belongs to the control arm ($x=0$) or the treatment arm ($x=1$), and set a negative $\beta$ under the assumption that the treatment has a consistent positive effect.
+
+Now, we only need to know $H_0^{-1}$ to simulate the survival time. To do so, we consider two commonly used survival time distributions: **exponential distribution** and **Weibull distribution**.
+
+### Exponential Distribution
+
+For exponential distribution with scale parameter $\lambda>0$, the possibility density function is $$f_0=\lambda exp(-\lambda t)$$
+
+Then, 
+\begin{align*}
+F_0(t) &= 1-exp(-\lambda t) \\
+S_0(t)&=1-F_0(t)=exp(-\lambda t) \\
+H_0(t)&=-log(S_0(t))=\lambda t \\
+h(t)&=H_0'(t)=\lambda>0 \\
+H_0^{-1}(t)&=\lambda^{-1}t
+\end{align*}
+
+Thus, $$T=-\lambda^{-1}log(U)exp(-\beta'x)$$ where $U\sim U(0,1)$.
+
+### Weibull Distribution
+For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$
+Then,
+\begin{align*}
+F_0(t) &= 1-exp(-\lambda t^\gamma) \\
+S_0(t) &= 1-F_0(t)=exp(-\lambda t^\gamma) \\
+H_0(t) &= -log(S_0(t))=\lambda t^\gamma \\
+h(t) &= H_0'(t)=\lambda\gamma t^{(\gamma-1)}>0 \\
+H_0^{-1}(t) &= {(\lambda^{-1}t)}^{1/\gamma}
+\end{align*}
+
+Thus,
+$$T={(-\lambda^{-1}log(U)exp(-\beta'x))}^{1/\gamma}$$
+where $U\sim U(0,1)$.
+
+## Non-Proportional-Hazard Assumption
+
+Under Non-Proportional-Hazard Assumption, we still consider the exponential model and Weibull model.
+
+### Piecewise Exponential Model
+
+To simplify the problem, we set the baseline hazard function to be a constant $\lambda_0=0.5$, which indicates that the survival time for the control arm follows exponential distribution.
+
+#### Late Effect
+For the treatment arm, we suppose the hazard function for the treatment arm is:
+$$h(t|x=1)=\left\{
+\begin{aligned}
+\lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1
+\end{aligned}
+\right.$$
+Then, $$H(t|x=1)=\left\{
+\begin{aligned}
+\lambda_0 t & & t<1 \\ (\lambda_0+\lambda_1)t-\lambda_1 & & t\geq 1
+\end{aligned}
+\right.$$
+$$S(t|x=1)=exp(-H(t|x=1))=\left\{
+\begin{aligned}
+exp(-\lambda_0 t) & & t<1 \\ exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
+\end{aligned}
+\right.$$
+$$F(t|x=1)=1-S(t|x=1)=\left\{
+\begin{aligned}
+1-exp(-\lambda_0 t) & & t<1 \\ 1-exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
+\end{aligned}
+\right.$$
+Let $1-U=F(t|x=1)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=1)\sim U(0,1)$. Thus,
+$$T=\left\{
+\begin{aligned}
+-\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\
+\frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0)
+\end{aligned}
+\right.$$
+
+#### Early Effect
+
+We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes:
+$$h(t|x=1)=\left\{
+\begin{aligned}
+\lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1
+\end{aligned}
+\right.$$
+Similarly, it can be derived that
+$$T=\left\{
+\begin{aligned}
+-\lambda_0^{-1}log(U) & & U\leq exp(-\lambda_0) \\
+\frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U>exp(-\lambda_0)
+\end{aligned}
+\right.$$
+where $U\sim U(0,1)$.
+
+### Weibull Model
+To simplify the problem, we assume the control and treatment arm share the same scale parameter $\lambda$. For the control arm, suppose the hazard function is:
+$$h(t|x=0)=\lambda\gamma_0 t^{(\gamma_0-1)}.$$
+Then, $$H(t|x=0)=\lambda t^\gamma_0$$
+$$S(t|x=0)=exp(-H(t|x=0))=exp(-\lambda t^\gamma_0)$$
+$$F(t|x=0)=1-S(t|x=0)=1-exp(-\lambda t^\gamma_0)$$
+Let $1-U=F(t|x=0)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=0)\sim U(0,1)$. Thus,
+$$T={(-\lambda^{-1}log(U))}^{1/\gamma_0}$$
+
+Similarly, we can write the hazard function for the treatment arm as:
+$$h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$$
+We can derive that $$T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$$
+
+# Simulation
+
+# Conclusion
+
+# Referrence
+
+# Appendix

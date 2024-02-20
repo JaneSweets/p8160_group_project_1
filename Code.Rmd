@@ -207,7 +207,7 @@ pwr_func = function(list_df, n = 50)
 
 # Non-Proportional-Hazard Assumption
 
-Under NPH assumption, we still consider the exponential model and weibull model.
+Under Non-Proportional-Hazard Assumption, we still consider the exponential model and Weibull model.
 
 ## Piecewise Exponential Model
 
