@@ -48,7 +48,7 @@ hazard_plot = function(func1, func2, t_max, title)
 
 In clinical trials, treatment efficacy is typically evaluated using time-to-event outcomes and the hazard ratio (HR) under the proportional hazards (PH) assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the PH assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events.
 
-This study examines the performance of three hypothesis tests for time-to-event data: the conventional log-rank test and two variants of the weighted log-rank test. The scenarios considered involve both proportional hazard functions, typical of distributions such as the exponential and Weibull, and non-proportional hazard functions, which may exhibit stepwise changes for the exponential distribution and the different coefficients of Weibull model. We used Monte Carlo simulation techniques to evaluate the power of hypothesis tests for a range of coefficient values.
+This study examines the performance of three hypothesis tests for time-to-event data: the conventional log-rank test and two variants of the weighted log-rank test. The scenarios considered involve both proportional hazard functions, typical of distributions such as the exponential and Weibull, and non-proportional hazard functions, which may exhibit piecewise changes for the exponential distribution and different gamma of Weibull model. We used Monte Carlo simulation techniques to evaluate the power of hypothesis tests for a range of coefficient values.
 
 Our analysis revealed the comparative effectiveness of these tests under diverse conditions, shedding light on the strengths and limitations of each approach. We found nuanced differences in their ability to detect treatment effects under varying hazard rate dynamics. By clarifying the relative performance of these tests, we aim to provide clinicians and researchers with actionable insights into selecting appropriate statistical methodologies for analyzing time-to-event data. This will enhance the rigor and reliability of clinical trial evaluations.
 
@@ -60,7 +60,7 @@ Under proportional-hazards assumption, the hazard function (Cox model) can be wr
 
 To simply the problem, here we only consider one covariate $x$, which indicates whether the sample belongs to the control arm ($x=0$) or the treatment arm ($x=1$), and set a negative $\beta$ under the assumption that the treatment has a consistent positive effect.
 
-Now, we only need to know $H_0^{-1}$ to simulate the survival time. To do so, we consider two commonly used survival time distributions: **exponential distribution** and **Weibull distribution**.
+Now, we only need to know $H_0^{-1}$ to simulate the survival time. To do so, we consider two commonly used survival time distributions: **Exponential distribution** and **Weibull distribution**.
 
 ### Exponential Distribution
 
@@ -96,9 +96,7 @@ Under Non-Proportional-Hazard Assumption, we still consider the exponential mode
 
 To simplify the problem, we set the baseline hazard function to be a constant $\lambda_0=0.5$, which indicates that the survival time for the control arm follows exponential distribution.
 
-#### Late Effect
-
-For the treatment arm, we suppose the hazard function for the treatment arm is: $$h(t|x=1)=\left\{
+**Late Effect:** For the treatment arm, we suppose the hazard function for the treatment arm is: $$h(t|x=1)=\left\{
 \begin{aligned}
 \lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1
 \end{aligned}
@@ -121,9 +119,7 @@ exp(-\lambda_0 t) & & t<1 \\ exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
 \end{aligned}
 \right.$$
 
-#### Early Effect
-
-We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes: $$h(t|x=1)=\left\{
+**Early Effect:** We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes: $$h(t|x=1)=\left\{
 \begin{aligned}
 \lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1
 \end{aligned}
@@ -148,9 +144,7 @@ Similarly, we can write the hazard function for the treatment arm as: $$h(t|x=1)
 
 ### Proportional-Hazard Assumption
 
-#### Exponential Distribution
-
-The hazard function under $\lambda=0.5,\,\beta=-0.5$ could be shown as follows:
+**Exponential Distribution:** The hazard function under $\lambda=0.5,\,\beta=-0.5$ could be shown as follows:
 
 ```{r, echo = FALSE}
 control_func = function(t) return(0.5)
@@ -160,9 +154,7 @@ hazard_plot(control_func, treatment_func, 5,
             "Proportional-Hazard Function for Exponential Models")
 ```
 
-#### Weibull Distribution
-
-The hazard function under $\lambda=0.5,\,\gamma=1.2,\,\beta=-0.5$ could be shown as follows:
+**Weibull Distribution:** The hazard function under $\lambda=0.5,\,\gamma=1.2,\,\beta=-0.5$ could be shown as follows:
 
 ```{r, echo = FALSE}
 control_func = function(t) return(0.5 * 1.2 * t ^ (1.2 - 1))
@@ -175,9 +167,7 @@ hazard_plot(control_func, treatment_func, 5,
 
 ### Non-Proportional-Hazard Assumption
 
-#### Piecewise Exponential Model
-
-The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
+**Piecewise Exponential Model:** The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
 
 ```{r, echo = FALSE}
 control_func = function(t) return(0.5)
@@ -197,9 +187,7 @@ hazard_plot(control_func, treatment_func, 5,
             "Non-Proportional-Hazard Function for Early-Effect Exponential Models")
 ```
 
-#### Weibull Model
-
-The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows:
+**Weibull Model:** The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows:
 
 ```{r, echo = FALSE}
 control_func = function(t) return(0.5 * 2 * t ^ (2 - 1))
