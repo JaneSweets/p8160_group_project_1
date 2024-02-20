@@ -7,11 +7,48 @@ output:
     number_sections: true
 ---
 
+```{r setup, include=FALSE}
+library(nph)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+knitr::opts_chunk$set(
+  fig.width = 8,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+set.seed(2024)
+```
+
+```{r plot function, include=FALSE}
+hazard_plot = function(func1, func2, t_max, title)
+{
+  ggplot() + 
+    xlim(0, t_max) + xlab("t") + ylab("hazard") +
+    geom_function(fun = func1, aes(lty = "control")) +
+    geom_function(fun = func2, aes(lty = "treatment")) +
+    scale_linetype_manual(values = c(1, 2)) +
+    labs(title = title)
+}
+```
+
 # Introduction
 
 In clinical trials, treatment efficacy is typically evaluated using time-to-event outcomes and the hazard ratio (HR) under the proportional hazards (PH) assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the PH assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events.
 
-This study examines the performance of three hypothesis tests for time-to-event data: the conventional log-rank test and two variants of the weighted log-rank test. The scenarios considered involve both proportional hazard functions, typical of distributions such as the exponential and Weibull, and non-proportional hazard functions, which may exhibit stepwise changes for the exponential distribution and the accelerated failure time model for the Weibull model. We used Monte Carlo simulation techniques to evaluate the power of hypothesis tests for a range of coefficient values.
+This study examines the performance of three hypothesis tests for time-to-event data: the conventional log-rank test and two variants of the weighted log-rank test. The scenarios considered involve both proportional hazard functions, typical of distributions such as the exponential and Weibull, and non-proportional hazard functions, which may exhibit stepwise changes for the exponential distribution and the different coefficients of Weibull model. We used Monte Carlo simulation techniques to evaluate the power of hypothesis tests for a range of coefficient values.
 
 Our analysis revealed the comparative effectiveness of these tests under diverse conditions, shedding light on the strengths and limitations of each approach. We found nuanced differences in their ability to detect treatment effects under varying hazard rate dynamics. By clarifying the relative performance of these tests, we aim to provide clinicians and researchers with actionable insights into selecting appropriate statistical methodologies for analyzing time-to-event data. This will enhance the rigor and reliability of clinical trial evaluations.
 
@@ -29,8 +66,7 @@ Now, we only need to know $H_0^{-1}$ to simulate the survival time. To do so, we
 
 For exponential distribution with scale parameter $\lambda>0$, the possibility density function is $$f_0=\lambda exp(-\lambda t)$$
 
-Then, 
-\begin{align*}
+Then, \begin{align*}
 F_0(t) &= 1-exp(-\lambda t) \\
 S_0(t)&=1-F_0(t)=exp(-\lambda t) \\
 H_0(t)&=-log(S_0(t))=\lambda t \\
@@ -41,9 +77,8 @@ H_0^{-1}(t)&=\lambda^{-1}t
 Thus, $$T=-\lambda^{-1}log(U)exp(-\beta'x)$$ where $U\sim U(0,1)$.
 
 ### Weibull Distribution
-For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$
-Then,
-\begin{align*}
+
+For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$ Then, \begin{align*}
 F_0(t) &= 1-exp(-\lambda t^\gamma) \\
 S_0(t) &= 1-F_0(t)=exp(-\lambda t^\gamma) \\
 H_0(t) &= -log(S_0(t))=\lambda t^\gamma \\
@@ -51,9 +86,7 @@ h(t) &= H_0'(t)=\lambda\gamma t^{(\gamma-1)}>0 \\
 H_0^{-1}(t) &= {(\lambda^{-1}t)}^{1/\gamma}
 \end{align*}
 
-Thus,
-$$T={(-\lambda^{-1}log(U)exp(-\beta'x))}^{1/\gamma}$$
-where $U\sim U(0,1)$.
+Thus, $$T={(-\lambda^{-1}log(U)exp(-\beta'x))}^{1/\gamma}$$ where $U\sim U(0,1)$.
 
 ## Non-Proportional-Hazard Assumption
 
@@ -64,29 +97,24 @@ Under Non-Proportional-Hazard Assumption, we still consider the exponential mode
 To simplify the problem, we set the baseline hazard function to be a constant $\lambda_0=0.5$, which indicates that the survival time for the control arm follows exponential distribution.
 
 #### Late Effect
-For the treatment arm, we suppose the hazard function for the treatment arm is:
-$$h(t|x=1)=\left\{
+
+For the treatment arm, we suppose the hazard function for the treatment arm is: $$h(t|x=1)=\left\{
 \begin{aligned}
 \lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1
 \end{aligned}
-\right.$$
-Then, $$H(t|x=1)=\left\{
+\right.$$ Then, $$H(t|x=1)=\left\{
 \begin{aligned}
 \lambda_0 t & & t<1 \\ (\lambda_0+\lambda_1)t-\lambda_1 & & t\geq 1
 \end{aligned}
-\right.$$
-$$S(t|x=1)=exp(-H(t|x=1))=\left\{
+\right.$$ $$S(t|x=1)=exp(-H(t|x=1))=\left\{
 \begin{aligned}
 exp(-\lambda_0 t) & & t<1 \\ exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
 \end{aligned}
-\right.$$
-$$F(t|x=1)=1-S(t|x=1)=\left\{
+\right.$$ $$F(t|x=1)=1-S(t|x=1)=\left\{
 \begin{aligned}
 1-exp(-\lambda_0 t) & & t<1 \\ 1-exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
 \end{aligned}
-\right.$$
-Let $1-U=F(t|x=1)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=1)\sim U(0,1)$. Thus,
-$$T=\left\{
+\right.$$ Let $1-U=F(t|x=1)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=1)\sim U(0,1)$. Thus, $$T=\left\{
 \begin{aligned}
 -\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\
 \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0)
@@ -95,45 +123,102 @@ $$T=\left\{
 
 #### Early Effect
 
-We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes:
-$$h(t|x=1)=\left\{
+We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes: $$h(t|x=1)=\left\{
 \begin{aligned}
 \lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1
 \end{aligned}
-\right.$$
-Similarly, it can be derived that
-$$T=\left\{
+\right.$$ Similarly, it can be derived that $$T=\left\{
 \begin{aligned}
 -\lambda_0^{-1}log(U) & & U\leq exp(-\lambda_0) \\
 \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U>exp(-\lambda_0)
 \end{aligned}
-\right.$$
-where $U\sim U(0,1)$.
+\right.$$ where $U\sim U(0,1)$.
 
 ### Weibull Model
-To simplify the problem, we assume the control and treatment arm share the same scale parameter $\lambda$. For the control arm, suppose the hazard function is:
-$$h(t|x=0)=\lambda\gamma_0 t^{(\gamma_0-1)}.$$
-Then, $$H(t|x=0)=\lambda t^\gamma_0$$
-$$S(t|x=0)=exp(-H(t|x=0))=exp(-\lambda t^\gamma_0)$$
-$$F(t|x=0)=1-S(t|x=0)=1-exp(-\lambda t^\gamma_0)$$
-Let $1-U=F(t|x=0)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=0)\sim U(0,1)$. Thus,
-$$T={(-\lambda^{-1}log(U))}^{1/\gamma_0}$$
 
-Similarly, we can write the hazard function for the treatment arm as:
-$$h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$$
-We can derive that $$T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$$
+To simplify the problem, we assume the control and treatment arm share the same scale parameter $\lambda$. For the control arm, suppose the hazard function is: $$h(t|x=0)=\lambda\gamma_0 t^{(\gamma_0-1)}.$$ Then, $$H(t|x=0)=\lambda t^\gamma_0$$ $$S(t|x=0)=exp(-H(t|x=0))=exp(-\lambda t^\gamma_0)$$ $$F(t|x=0)=1-S(t|x=0)=1-exp(-\lambda t^\gamma_0)$$ Let $1-U=F(t|x=0)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=0)\sim U(0,1)$. Thus, $$T={(-\lambda^{-1}log(U))}^{1/\gamma_0}$$
+
+Similarly, we can write the hazard function for the treatment arm as: $$h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$$ We can derive that $$T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$$
 
 # Simulation
 
 # Conclusion
 
+## Graph
+
+### Proportional-Hazard Assumption
+
+#### Exponential Distribution
+
+The hazard function under $\lambda=0.5,\,\beta=-0.5$ could be shown as follows:
+
+```{r, echo = FALSE}
+control_func = function(t) return(0.5)
+treatment_func = function(t) return(0.5 * exp(-0.5))
+
+hazard_plot(control_func, treatment_func, 5, 
+            "Proportional-Hazard Function for Exponential Models")
+```
+
+#### Weibull Distribution
+
+The hazard function under $\lambda=0.5,\,\gamma=1.2,\,\beta=-0.5$ could be shown as follows:
+
+```{r, echo = FALSE}
+control_func = function(t) return(0.5 * 1.2 * t ^ (1.2 - 1))
+treatment_func = function(t)
+  return(0.5 * 1.2 * t ^ (1.2 - 1) * exp(-0.5))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Proportional-Hazard Function for Weibull Models")
+```
+
+### Non-Proportional-Hazard Assumption
+
+#### Piecewise Exponential Model
+
+The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
+
+```{r, echo = FALSE}
+control_func = function(t) return(0.5)
+treatment_func = function(t) return(0.5 * (t < 1) + 0.3 * (t >= 1))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Non-Proportional-Hazard Function for Late-Effect Exponential Models")
+```
+
+The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
+
+```{r, echo = FALSE}
+control_func = function(t) return(0.5)
+treatment_func = function(t) return(0.5 * (t >= 1) + 0.3 * (t < 1))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Non-Proportional-Hazard Function for Early-Effect Exponential Models")
+```
+
+#### Weibull Model
+
+The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows:
+
+```{r, echo = FALSE}
+control_func = function(t) return(0.5 * 2 * t ^ (2 - 1))
+treatment_func = function(t) return(0.5 * 1.5 * t ^ (1.5 - 1))
+
+hazard_plot(control_func, treatment_func, 5,
+            "Non-Proportional-Hazard Function for Late-Effect Weibull Models")
+```
+
+## Table
+
 # Referrence
-Austin, P. C. (2012). Generating survival times to simulate Cox proportional hazards models with time-varying covariates. Statistics in Medicine, 31(29), 3946–3958. https://doi.org/10.1002/sim.5452
 
-Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. Statistics in Medicine, 24(11), 1713–1723. https://doi.org/10.1002/sim.2059
+Austin, P. C. (2012). Generating survival times to simulate Cox proportional hazards models with time-varying covariates. Statistics in Medicine, 31(29), 3946--3958. <https://doi.org/10.1002/sim.5452>
 
-Bardo, M. F., Huber, C., Benda, N., Brugger, J., Fellinger, T., Vaidotas Galaune, Heinz, J., Heinzl, H., Hooker, A. C., Florian Klinglmüller, Franz König, Mathes, T., Mittlböck, M., Posch, M., Ristl, R., & Friede, T. (2023). Methods for non-proportional hazards in clinical trials: A systematic review. ArXiv (Cornell University). https://doi.org/10.48550/arxiv.2306.16858
+Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. Statistics in Medicine, 24(11), 1713--1723. <https://doi.org/10.1002/sim.2059>
 
-Henderson, B. (2014). Special Oxford University Spring School course, June 18-20. Empirical Legal Studies. https://www.elsblog.org/the_empirical_legal_studi/2007/04/special_oxford_.html
+Bardo, M. F., Huber, C., Benda, N., Brugger, J., Fellinger, T., Vaidotas Galaune, Heinz, J., Heinzl, H., Hooker, A. C., Florian Klinglmüller, Franz König, Mathes, T., Mittlböck, M., Posch, M., Ristl, R., & Friede, T. (2023). Methods for non-proportional hazards in clinical trials: A systematic review. ArXiv (Cornell University). <https://doi.org/10.48550/arxiv.2306.16858>
+
+Henderson, B. (2014). Special Oxford University Spring School course, June 18-20. Empirical Legal Studies. <https://www.elsblog.org/the_empirical_legal_studi/2007/04/special_oxford_.html>
 
 # Appendix
