@@ -338,7 +338,7 @@ hazard_plot(control_func, treatment_func, 5,
 
 ```{r}
 early_pw_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
-            lambda0 = c(0.5, 0.8), lambda1 = c(0.3, 0.4))
+            lambda0 = c(0.8, 0.9), lambda1 = c(0.6, 0.7))
 
 early_pw_results =
   mapply(piecewise_sim_func, n = early_pw_param_df$n,
@@ -417,8 +417,8 @@ weibull_sim_func = function(n, lambda = 0.5, gamma0, gamma1)
 ```{r}
 late_wei_param_df = 
   expand.grid(iteration = c(1:50), n = c(50, 100, 200), 
-              lambda = c(0.5, 0.8), gamma0 = c(2, 3), 
-              gamma1 = c(1.5, 1.8))
+              lambda = c(0.5, 0.8), gamma0 = c(3, 5), 
+              gamma1 = c(1.2, 1.5))
 
 late_wei_results =
   mapply(weibull_sim_func, n = late_wei_param_df$n,
