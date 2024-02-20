@@ -12,6 +12,7 @@ library(nph)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+library(gridExtra)
 
 knitr::opts_chunk$set(
   fig.width = 8,
@@ -66,25 +67,11 @@ Now, we only need to know $H_0^{-1}$ to simulate the survival time. To do so, we
 
 For exponential distribution with scale parameter $\lambda>0$, the possibility density function is $$f_0=\lambda exp(-\lambda t)$$
 
-Then, \begin{align*}
-F_0(t) &= 1-exp(-\lambda t) \\
-S_0(t)&=1-F_0(t)=exp(-\lambda t) \\
-H_0(t)&=-log(S_0(t))=\lambda t \\
-h(t)&=H_0'(t)=\lambda>0 \\
-H_0^{-1}(t)&=\lambda^{-1}t
-\end{align*}
-
 Thus, $$T=-\lambda^{-1}log(U)exp(-\beta'x)$$ where $U\sim U(0,1)$.
 
 ### Weibull Distribution
 
-For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$ Then, \begin{align*}
-F_0(t) &= 1-exp(-\lambda t^\gamma) \\
-S_0(t) &= 1-F_0(t)=exp(-\lambda t^\gamma) \\
-H_0(t) &= -log(S_0(t))=\lambda t^\gamma \\
-h(t) &= H_0'(t)=\lambda\gamma t^{(\gamma-1)}>0 \\
-H_0^{-1}(t) &= {(\lambda^{-1}t)}^{1/\gamma}
-\end{align*}
+For Weibull distribution with the scale parameter $\lambda$, and is the shape parameter $\gamma$, the possibility density function is $$f_0=\lambda\gamma t^{\gamma-1}exp(-\lambda t^\gamma)$$
 
 Thus, $$T={(-\lambda^{-1}log(U)exp(-\beta'x))}^{1/\gamma}$$ where $U\sim U(0,1)$.
 
@@ -100,19 +87,7 @@ To simplify the problem, we set the baseline hazard function to be a constant $\
 \begin{aligned}
 \lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1
 \end{aligned}
-\right.$$ Then, $$H(t|x=1)=\left\{
-\begin{aligned}
-\lambda_0 t & & t<1 \\ (\lambda_0+\lambda_1)t-\lambda_1 & & t\geq 1
-\end{aligned}
-\right.$$ $$S(t|x=1)=exp(-H(t|x=1))=\left\{
-\begin{aligned}
-exp(-\lambda_0 t) & & t<1 \\ exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
-\end{aligned}
-\right.$$ $$F(t|x=1)=1-S(t|x=1)=\left\{
-\begin{aligned}
-1-exp(-\lambda_0 t) & & t<1 \\ 1-exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
-\end{aligned}
-\right.$$ Let $1-U=F(t|x=1)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=1)\sim U(0,1)$. Thus, $$T=\left\{
+\right.$$Thus, $$T=\left\{
 \begin{aligned}
 -\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\
 \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0)
@@ -132,7 +107,7 @@ exp(-\lambda_0 t) & & t<1 \\ exp(-(\lambda_0+\lambda_1)t+\lambda_1) & & t\geq 1
 
 ### Weibull Model
 
-To simplify the problem, we assume the control and treatment arm share the same scale parameter $\lambda$. For the control arm, suppose the hazard function is: $$h(t|x=0)=\lambda\gamma_0 t^{(\gamma_0-1)}.$$ Then, $$H(t|x=0)=\lambda t^\gamma_0$$ $$S(t|x=0)=exp(-H(t|x=0))=exp(-\lambda t^\gamma_0)$$ $$F(t|x=0)=1-S(t|x=0)=1-exp(-\lambda t^\gamma_0)$$ Let $1-U=F(t|x=0)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=0)\sim U(0,1)$. Thus, $$T={(-\lambda^{-1}log(U))}^{1/\gamma_0}$$
+To simplify the problem, we assume the control and treatment arm share the same scale parameter $\lambda$. For the control arm, suppose the hazard function is: $$h(t|x=0)=\lambda\gamma_0 t^{(\gamma_0-1)}.$$ Thus, $$T={(-\lambda^{-1}log(U))}^{1/\gamma_0}$$
 
 Similarly, we can write the hazard function for the treatment arm as: $$h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$$ We can derive that $$T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$$
 
@@ -144,47 +119,47 @@ Similarly, we can write the hazard function for the treatment arm as: $$h(t|x=1)
 
 ### Proportional-Hazard Assumption
 
-**Exponential Distribution:** The hazard function under $\lambda=0.5,\,\beta=-0.5$ could be shown as follows:
+We gave examples to see the proportional hazard ratio functions by setting a exponential distributed hazard function under $\lambda=0.5,\,\beta=-0.5$ and a Weibull distributed hazard function under $\lambda=0.5,\,\gamma=1.2,\,\beta=-0.5$, shown as follows:
 
 ```{r, echo = FALSE}
-control_func = function(t) return(0.5)
-treatment_func = function(t) return(0.5 * exp(-0.5))
+# Exponential Distribution
+control_func_exp <- function(t) return(0.5)
+treatment_func_exp <- function(t) return(0.5 * exp(-0.5))
 
-hazard_plot(control_func, treatment_func, 5, 
-            "Proportional-Hazard Function for Exponential Models")
-```
+p1 <- hazard_plot(control_func_exp, treatment_func_exp, 5, 
+                  "Proportional-Hazard Function for Exponential Models")
 
-**Weibull Distribution:** The hazard function under $\lambda=0.5,\,\gamma=1.2,\,\beta=-0.5$ could be shown as follows:
+# Weibull Distribution
+control_func_weibull <- function(t) return(0.5 * 1.2 * t^(1.2 - 1))
+treatment_func_weibull <- function(t) return(0.5 * 1.2 * t^(1.2 - 1) * exp(-0.5))
 
-```{r, echo = FALSE}
-control_func = function(t) return(0.5 * 1.2 * t ^ (1.2 - 1))
-treatment_func = function(t)
-  return(0.5 * 1.2 * t ^ (1.2 - 1) * exp(-0.5))
+p2 <- hazard_plot(control_func_weibull, treatment_func_weibull, 5,
+                  "Proportional-Hazard Function for Weibull Models")
 
-hazard_plot(control_func, treatment_func, 5,
-            "Proportional-Hazard Function for Weibull Models")
+p1 <- p1 + ggtitle("Proportional-Hazard Function\nfor Exponential Models")
+p2 <- p2 + ggtitle("Proportional-Hazard Function\nfor Weibull Models")
+
+grid.arrange(p1, p2, nrow = 1)
 ```
 
 ### Non-Proportional-Hazard Assumption
 
-**Piecewise Exponential Model:** The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
+**Piecewise Exponential Model:** The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could reach late effect and hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ chould reach early effect, shown as follows:
 
 ```{r, echo = FALSE}
-control_func = function(t) return(0.5)
-treatment_func = function(t) return(0.5 * (t < 1) + 0.3 * (t >= 1))
+control_func <- function(t) return(0.5)
+treatment_func <- function(t) return(0.5 * (t < 1) + 0.3 * (t >= 1))
 
-hazard_plot(control_func, treatment_func, 5,
-            "Non-Proportional-Hazard Function for Late-Effect Exponential Models")
-```
+p1 <- hazard_plot(control_func, treatment_func, 5,
+                  "Late-Effect Exponential Models")
 
-The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as follows:
+control_func <- function(t) return(0.5)
+treatment_func <- function(t) return(0.5 * (t >= 1) + 0.3 * (t < 1))
 
-```{r, echo = FALSE}
-control_func = function(t) return(0.5)
-treatment_func = function(t) return(0.5 * (t >= 1) + 0.3 * (t < 1))
+p2 <- hazard_plot(control_func, treatment_func, 5,
+                  "Early-Effect Exponential Models")
 
-hazard_plot(control_func, treatment_func, 5,
-            "Non-Proportional-Hazard Function for Early-Effect Exponential Models")
+grid.arrange(p1, p2, nrow = 1)
 ```
 
 **Weibull Model:** The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows:
@@ -206,7 +181,5 @@ Austin, P. C. (2012). Generating survival times to simulate Cox proportional haz
 Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. Statistics in Medicine, 24(11), 1713--1723. <https://doi.org/10.1002/sim.2059>
 
 Bardo, M. F., Huber, C., Benda, N., Brugger, J., Fellinger, T., Vaidotas Galaune, Heinz, J., Heinzl, H., Hooker, A. C., Florian Klinglmüller, Franz König, Mathes, T., Mittlböck, M., Posch, M., Ristl, R., & Friede, T. (2023). Methods for non-proportional hazards in clinical trials: A systematic review. ArXiv (Cornell University). <https://doi.org/10.48550/arxiv.2306.16858>
-
-Henderson, B. (2014). Special Oxford University Spring School course, June 18-20. Empirical Legal Studies. <https://www.elsblog.org/the_empirical_legal_studi/2007/04/special_oxford_.html>
 
 # Appendix
