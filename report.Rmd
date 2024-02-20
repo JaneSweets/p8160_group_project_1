@@ -128,5 +128,12 @@ We can derive that $$T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$$
 # Conclusion
 
 # Referrence
+Austin, P. C. (2012). Generating survival times to simulate Cox proportional hazards models with time-varying covariates. Statistics in Medicine, 31(29), 3946–3958. https://doi.org/10.1002/sim.5452
+
+Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. Statistics in Medicine, 24(11), 1713–1723. https://doi.org/10.1002/sim.2059
+
+Bardo, M. F., Huber, C., Benda, N., Brugger, J., Fellinger, T., Vaidotas Galaune, Heinz, J., Heinzl, H., Hooker, A. C., Florian Klinglmüller, Franz König, Mathes, T., Mittlböck, M., Posch, M., Ristl, R., & Friede, T. (2023). Methods for non-proportional hazards in clinical trials: A systematic review. ArXiv (Cornell University). https://doi.org/10.48550/arxiv.2306.16858
+
+Henderson, B. (2014). Special Oxford University Spring School course, June 18-20. Empirical Legal Studies. https://www.elsblog.org/the_empirical_legal_studi/2007/04/special_oxford_.html
 
 # Appendix
