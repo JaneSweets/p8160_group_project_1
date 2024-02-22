@@ -416,7 +416,7 @@ weibull_sim_func = function(n, lambda = 0.5, gamma0, gamma1)
 
 ```{r}
 late_wei_param_df = 
-  expand.grid(iteration = c(1:50), n = c(100, 300), 
+  expand.grid(iteration = c(1:50), n = c(100, 3-00), 
               lambda = c(0.5, 0.8), gamma0 = c(3, 5), 
               gamma1 = c(1.2, 1.5))
 
