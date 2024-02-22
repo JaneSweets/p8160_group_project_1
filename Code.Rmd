@@ -134,9 +134,9 @@ ph_simulate_func = function(n, baseline, lambda, gamma = NULL, coveff)
 To observe the potential relevance between test performance and number of samples ($n$), parameter value ($\lambda,\,\gamma$), and coefficient $\beta$, we set $n=50,\,100,\,200$, $\lambda=0,\,0.5,\,1$, $\gamma=1.2,\,1.5$, and $\beta=0,\,1,\,2$. We repeat 50 times for each value setting. The generation process is written as follows:
 
 ```{r}
-exp_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+exp_param_df = expand.grid(iteration = c(1:50), n = c(100, 300),
             lambda = c(0.5, 0.8, 1), beta = c(-0.5, -1, -5))
-wei_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+wei_param_df = expand.grid(iteration = c(1:50), n = c(100, 300),
             lambda = c(0.5, 0.8, 1), gamma = c(1.2, 1.5), 
             beta = c(-0.5, -1, -5))
 
@@ -282,7 +282,7 @@ piecewise_sim_func = function(n, lambda0 = 0.5, lambda1, type)
 ```
 
 ```{r}
-late_pw_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+late_pw_param_df = expand.grid(iteration = c(1:50), n = c(100, 300),
             lambda0 = c(0.5, 0.8), lambda1 = c(0.3, 0.4))
 
 late_pw_results =
@@ -337,7 +337,7 @@ hazard_plot(control_func, treatment_func, 5,
 ```
 
 ```{r}
-early_pw_param_df = expand.grid(iteration = c(1:50), n = c(50, 100, 200),
+early_pw_param_df = expand.grid(iteration = c(1:50), n = c(100, 300),
             lambda0 = c(0.8, 0.9), lambda1 = c(0.6, 0.7))
 
 early_pw_results =
@@ -416,7 +416,7 @@ weibull_sim_func = function(n, lambda = 0.5, gamma0, gamma1)
 
 ```{r}
 late_wei_param_df = 
-  expand.grid(iteration = c(1:50), n = c(50, 100, 200), 
+  expand.grid(iteration = c(1:50), n = c(100, 300), 
               lambda = c(0.5, 0.8), gamma0 = c(3, 5), 
               gamma1 = c(1.2, 1.5))
 
