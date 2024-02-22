@@ -205,13 +205,13 @@ ph_exp_df = ph_exp_df |>
   mutate(power = map(simulations, pwr_func)) |>
   unnest(power) |>
   select(-simulations)
-kable(ph_exp_df, title = "Power of 3 Log-Rank Tests based on PH Assumption")
+kable(ph_exp_df, caption = "Power of 3 Log-Rank Tests based on PH Assumption")
 
 ph_wei_df = ph_wei_df |> 
   mutate(power = map(simulations, pwr_func)) |> 
   unnest(power) |>
   select(-simulations)
-kable(ph_wei_df, title = "Power of 3 Log-Rank Tests based on PH Assumption")
+kable(ph_wei_df, caption = "Power of 3 Log-Rank Tests based on PH Assumption")
 ```
 
 # Non-Proportional-Hazard Assumption
@@ -320,7 +320,7 @@ late_pw_df = late_pw_df |>
   unnest(power) |>
   select(-simulations)
 
-kable(late_pw_df, title = "Power of 3 Log-Rank Tests based on NPH Assumption (Late)")
+kable(late_pw_df, caption = "Power of 3 Log-Rank Tests based on NPH Assumption (Late)")
 ```
 
 ### Early Effect
@@ -379,7 +379,7 @@ early_pw_df = early_pw_df |>
   unnest(power) |>
   select(-simulations)
 
-kable(early_pw_df, title = "Power of 3 Log-Rank Tests based on NPH Assumption (Early)")
+kable(early_pw_df, caption = "Power of 3 Log-Rank Tests based on NPH Assumption (Early)")
 ```
 
 ## Weibull Model
@@ -433,7 +433,7 @@ weibull_sim_func = function(n, lambda = 0.5, gamma0, gamma1)
 
 ```{r}
 late_wei_param_df = 
-  expand.grid(iteration = c(1:50), n = c(100, 3-00), 
+  expand.grid(iteration = c(1:50), n = c(100, 200), 
               lambda = c(0.5, 0.8), gamma0 = c(3, 5), 
               gamma1 = c(1.2, 1.5))
 
@@ -458,13 +458,15 @@ late_wei_df = late_wei_df |> nest(simulations = c(data))
 
 Under different settings, we want to test the $H_0:$ there is no difference in survival between the treatment and control arm. Therefore, we use three different log-rank tests and compare the test power at the 0.05 significance level.
 
+\newpage
+
 ```{r}
 late_wei_df = late_wei_df |>
   mutate(power = map(simulations, pwr_func)) |>
   unnest(power) |>
   select(-simulations)
 
-kable(late_wei_df, title = "Power of 3 Log-Rank Tests based on NPH Assumption")
+kable(late_wei_df, caption = "Power of 3 Log-Rank Tests based on NPH Assumption")
 ```
 
 If set the survival time for the control arm to follow exponential distribution, and set the hazard function for the treatment arm to be $\lambda$ after reaching $\lambda$, then the hazard function under $\lambda=0.5,\,\gamma=1.5$ could be shown as follows:

@@ -112,6 +112,25 @@ To simplify the problem, we assume the control and treatment arm share the same 
 Similarly, we can write the hazard function for the treatment arm as: $h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$ We can derive that $T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$.
 
 # Simulation Results
+\begin{center}
+    \includegraphics[width=0.7\textwidth]{./graph/t1.png}
+\end{center}
+
+\begin{center}
+    \includegraphics[width=0.7\textwidth]{./graph/t2.png}
+\end{center}
+
+\begin{center}
+    \includegraphics[width=0.75\textwidth]{./graph/t3.png}
+\end{center}
+
+\begin{center}
+    \includegraphics[width=0.7\textwidth]{./graph/t4.png}
+\end{center}
+
+\begin{center}
+    \includegraphics[width=0.65\textwidth]{./graph/t5.png}
+\end{center}
 
 # Conclusion
 
