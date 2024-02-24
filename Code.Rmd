@@ -206,18 +206,23 @@ ph_exp_df = ph_exp_df |>
   mutate(specificity = map(simulations, specif_func)) |>
   unnest(specificity) |>
   select(-simulations)
-kable(ph_exp_df, caption = "Specificity of 3 Log-Rank Tests based on PH Assumption")
 
 
 ph_wei_df = ph_wei_df |> 
   mutate(specificity = map(simulations, specif_func)) |> 
   unnest(specificity) |>
   select(-simulations)
+
+```
+
+\newpage
+```{r}
+kable(ph_exp_df, caption = "Specificity of 3 Log-Rank Tests based on PH Assumption")
+```
+
+\newpage
+```{r}
 kable(ph_wei_df, caption = "Specificity of 3 Log-Rank Tests based on PH Assumption")
-
-
-
-
 ```
 
 ```{r}
@@ -376,6 +381,11 @@ late_pw_df = late_pw_df |>
   unnest(specificity) |>
   select(-simulations)
 
+```
+
+\newpage
+```{r}
+
 kable(late_pw_df, caption = "Specificity of 3 Log-Rank Tests based on NPH Assumption (Late)")
 ```
 
@@ -457,7 +467,10 @@ early_pw_df = early_pw_df |>
   mutate(specificity = map(simulations, specif_func)) |> 
   unnest(specificity) |>
   select(-simulations)
+```
 
+\newpage
+```{r}
 kable(early_pw_df, caption = "Specificity of 3 Log-Rank Tests based on NPH Assumption (Early)")
 ```
 
@@ -567,7 +580,10 @@ late_wei_df = late_wei_df |>
   mutate(specificity = map(simulations, specif_func)) |>
   unnest(specificity) |>
   select(-simulations)
+```
 
+\newpage
+```{r}
 kable(late_wei_df, caption = "Specificity of 3 Log-Rank Tests based on NPH Assumption")
 ```
 
