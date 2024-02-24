@@ -45,10 +45,11 @@ hazard_plot = function(func1, func2, t_max, title)
 }
 ```
 
+```{=tex}
 \begin{abstract}
 This study compares the performance of three hypothesis tests for time-to-event data: the conventional log-rank test and two variants of the weighted log-rank test. We assess their effectiveness under scenarios involving both proportional and non-proportional hazard functions, using Monte Carlo simulation techniques to evaluate power across a range of coefficient values. Our analysis highlights nuanced differences in their ability to detect treatment effects, providing insights into selecting appropriate statistical methodologies for analyzing time-to-event data in clinical trials.
 \end{abstract}
-
+```
 # Introduction
 
 In clinical trials, treatment efficacy is typically evaluated using time-to-event outcomes and the hazard ratio under the proportional hazards assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the proportional hazards assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events. To test the performance of various log-rank tests, we focus on both proportional hazards and non-proportional hazards based on exponential and Weibull distribution assumptions, and then evaluate the power of different parameters.
@@ -79,31 +80,13 @@ Under Non-Proportional-Hazard Assumption, we still consider the exponential mode
 
 ### Piecewise Exponential Model
 
-**Late Effect:** We suppose the hazard function for the treatment arm is: $h(t|x=1)=\left\{
-\begin{aligned}
-\lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1
-\end{aligned}
-\right.$
+**Late Effect:** We suppose the hazard function for the treatment arm is: $h(t|x=1)=\left\{ \begin{aligned} \lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1 \end{aligned} \right.$
 
-Thus, $T=\left\{
-\begin{aligned}
--\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\
-\frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0)
-\end{aligned}
-\right.$
+Thus, $T=\left\{ \begin{aligned} -\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\ \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0) \end{aligned} \right.$
 
-**Early Effect:** We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes: $h(t|x=1)=\left\{
-\begin{aligned}
-\lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1
-\end{aligned}
-\right.$
+**Early Effect:** We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes: $h(t|x=1)=\left\{ \begin{aligned} \lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1 \end{aligned} \right.$
 
-Thus, $T=\left\{
-\begin{aligned}
--\lambda_0^{-1}log(U) & & U\leq exp(-\lambda_0) \\
-\frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U>exp(-\lambda_0)
-\end{aligned}
-\right.$ where $U\sim U(0,1)$.
+Thus, $T=\left\{ \begin{aligned} -\lambda_0^{-1}log(U) & & U\leq exp(-\lambda_0) \\ \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U>exp(-\lambda_0) \end{aligned} \right.$ where $U\sim U(0,1)$.
 
 ### Weibull Model
 
@@ -115,34 +98,40 @@ Similarly, we can write the hazard function for the treatment arm as: $h(t|x=1)=
 
 ## Proportional-Hazard Assumption
 
-In this scenario, two tables have been presented, each illustrating the baseline function following either an exponential or Weibull distribution. The results of the tables reveals that for assessing the Proportional-Hazard Assumption, the overall log-rank test exhibits superior specificity, indicating more robust results. Furthermore, with an increase in sample size, there is a tendency towards higher specificity rates.
+In this scenario, two tables have been presented, illustrating the baseline function following either an exponential **(Table 1)** or Weibull distribution **(Table 2)**. The results reveals that for assessing the Proportional-Hazard Assumption, the overall log-rank test (test 1_specificity) exhibits superior specificity, indicating more robust results. Furthermore, an increase in sample size tends towards higher specificity rates.
 
+```{=tex}
 \begin{center}
     \includegraphics[width=0.7\textwidth]{./graph/t1.png}
 \end{center}
-
+```
+```{=tex}
 \begin{center}
     \includegraphics[width=0.7\textwidth]{./graph/t2.png}
 \end{center}
-
+```
 ## Non-Proportional-Hazard Assumption
 
-In the first scenario of addressing the Non-Proportional-Hazard Assumption, we assume a stepwise exponential distribution. The subsequent two tables demonstrate that employing the corresponding weighted log-rank test for late and early effects does indeed yield higher specificity rates. In addition, similar to the previous table, there is a tendency toward higher specificity rates as the sample size increases.
+In the first scenario of addressing the Non-Proportional-Hazard Assumption, we assume a stepwise exponential distribution. The subsequent two tables demonstrate that employing the corresponding weighted log-rank test for late and early effects does indeed yield higher specificity rates. The weighted log-rank test (test 2_specificity) in **Table 3** demonstrates superior performance with increasing hazard ratios between the control and treatment groups for late effects. Likewise, the weighted log-rank test for early effects (test 3_specificity) in **Table 4** exhibits better efficacy with decreasing hazard ratios between the control and treatment groups. In addition, similar to the previous table, there is a tendency toward higher specificity rates as the sample size increases.
 
+```{=tex}
 \begin{center}
     \includegraphics[width=0.7\textwidth]{./graph/t3.png}
 \end{center}
-
+```
+```{=tex}
 \begin{center}
     \includegraphics[width=0.7\textwidth]{./graph/t4.png}
 \end{center}
+```
 
-In the second scenario of addressing the Non-Proportional-Hazard Assumption, we assume that the treatment group and control group have different shape parameters $\gamma$. In this case, the late weighted log-rank test demonstrates the best performance, consistent with our intuitive findings. Furthermore, increasing the sample size continues to enhance specificity.
+In the second scenario of addressing the Non-Proportional-Hazard Assumption, we assume that the treatment group and control group have different shape parameters $\gamma$ **(Table 5)**. In this case, the weighted log-rank test for late effects demonstrates the best performance, consistent with our intuitive findings. Furthermore, increasing the sample size continues to enhance specificity.
 
+```{=tex}
 \begin{center}
     \includegraphics[width=0.7\textwidth]{./graph/t5.png}
 \end{center}
-
+```
 # Conclusion
 
 In conclusion, our study sheds light on the performance of three hypothesis tests for time-to-event data analysis: the conventional log-rank test and two variations of the weighted log-rank test. We explored scenarios encompassing both proportional and non-proportional hazard functions, employing Monte Carlo simulation techniques to evaluate their power across various coefficient values.
@@ -162,24 +151,33 @@ Overall, our study offers valuable insights into choosing suitable statistical m
 <!-- We gave examples to see the proportional hazard ratio functions by setting a exponential distributed hazard function under $\lambda=0.5,\,\beta=-0.5$ and a Weibull distributed hazard function under $\lambda=0.5,\,\gamma=1.2,\,\beta=-0.5$, shown as follows: -->
 
 <!-- ```{r, echo = FALSE} -->
+
 <!-- # Exponential Distribution -->
+
 <!-- control_func_exp <- function(t) return(0.5) -->
+
 <!-- treatment_func_exp <- function(t) return(0.5 * exp(-0.5)) -->
 
 <!-- p1 <- hazard_plot(control_func_exp, treatment_func_exp, 5,  -->
+
 <!--                   "Proportional-Hazard Function for Exponential Models") -->
 
 <!-- # Weibull Distribution -->
+
 <!-- control_func_weibull <- function(t) return(0.5 * 1.2 * t^(1.2 - 1)) -->
+
 <!-- treatment_func_weibull <- function(t) return(0.5 * 1.2 * t^(1.2 - 1) * exp(-0.5)) -->
 
 <!-- p2 <- hazard_plot(control_func_weibull, treatment_func_weibull, 5, -->
+
 <!--                   "Proportional-Hazard Function for Weibull Models") -->
 
 <!-- p1 <- p1 + ggtitle("Proportional-Hazard Function\nfor Exponential Models") -->
+
 <!-- p2 <- p2 + ggtitle("Proportional-Hazard Function\nfor Weibull Models") -->
 
 <!-- grid.arrange(p1, p2, nrow = 1) -->
+
 <!-- ``` -->
 
 <!-- ### Non-Proportional-Hazard Assumption -->
@@ -187,31 +185,40 @@ Overall, our study offers valuable insights into choosing suitable statistical m
 <!-- **Piecewise Exponential Model:** The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could reach late effect and hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ chould reach early effect, shown as follows: -->
 
 <!-- ```{r, echo = FALSE} -->
+
 <!-- control_func <- function(t) return(0.5) -->
+
 <!-- treatment_func <- function(t) return(0.5 * (t < 1) + 0.3 * (t >= 1)) -->
 
 <!-- p1 <- hazard_plot(control_func, treatment_func, 5, -->
+
 <!--                   "Late-Effect Exponential Models") -->
 
 <!-- control_func <- function(t) return(0.5) -->
+
 <!-- treatment_func <- function(t) return(0.5 * (t >= 1) + 0.3 * (t < 1)) -->
 
 <!-- p2 <- hazard_plot(control_func, treatment_func, 5, -->
+
 <!--                   "Early-Effect Exponential Models") -->
 
 <!-- grid.arrange(p1, p2, nrow = 1) -->
+
 <!-- ``` -->
 
 <!-- **Weibull Model:** The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows: -->
 
 <!-- ```{r, echo = FALSE} -->
+
 <!-- control_func = function(t) return(0.5 * 2 * t ^ (2 - 1)) -->
+
 <!-- treatment_func = function(t) return(0.5 * 1.5 * t ^ (1.5 - 1)) -->
 
 <!-- hazard_plot(control_func, treatment_func, 5, -->
-<!--             "Non-Proportional-Hazard Function for Late-Effect Weibull Models") -->
-<!-- ``` -->
 
+<!--             "Non-Proportional-Hazard Function for Late-Effect Weibull Models") -->
+
+<!-- ``` -->
 
 # Referrence
 
