@@ -112,6 +112,11 @@ To simplify the problem, we assume the control and treatment arm share the same 
 Similarly, we can write the hazard function for the treatment arm as: $h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$ We can derive that $T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$.
 
 # Simulation Results
+
+## Proportional-Hazard Assumption
+
+In this scenario, two tables have been presented, each illustrating the baseline function following either an exponential or Weibull distribution. The results of the tables reveals that for assessing the Proportional-Hazard Assumption, the overall log-rank test exhibits superior specificity, indicating more robust results. Furthermore, with an increase in sample size, there is a tendency towards higher specificity rates.
+
 \begin{center}
     \includegraphics[width=0.7\textwidth]{./graph/t1.png}
 \end{center}
@@ -120,19 +125,35 @@ Similarly, we can write the hazard function for the treatment arm as: $h(t|x=1)=
     \includegraphics[width=0.7\textwidth]{./graph/t2.png}
 \end{center}
 
+## Non-Proportional-Hazard Assumption
+
+In the first scenario of addressing the Non-Proportional-Hazard Assumption, we assume a stepwise exponential distribution. The subsequent two tables demonstrate that employing the corresponding weighted log-rank test for late and early effects does indeed yield higher specificity rates. In addition, similar to the previous table, there is a tendency toward higher specificity rates as the sample size increases.
+
 \begin{center}
-    \includegraphics[width=0.75\textwidth]{./graph/t3.png}
+    \includegraphics[width=0.7\textwidth]{./graph/t3.png}
 \end{center}
 
 \begin{center}
     \includegraphics[width=0.7\textwidth]{./graph/t4.png}
 \end{center}
 
+In the second scenario of addressing the Non-Proportional-Hazard Assumption, we assume that the treatment group and control group have different shape parameters $\gamma$. In this case, the late weighted log-rank test demonstrates the best performance, consistent with our intuitive findings. Furthermore, increasing the sample size continues to enhance specificity.
+
 \begin{center}
-    \includegraphics[width=0.65\textwidth]{./graph/t5.png}
+    \includegraphics[width=0.7\textwidth]{./graph/t5.png}
 \end{center}
 
 # Conclusion
+
+In conclusion, our study sheds light on the performance of three hypothesis tests for time-to-event data analysis: the conventional log-rank test and two variations of the weighted log-rank test. We explored scenarios encompassing both proportional and non-proportional hazard functions, employing Monte Carlo simulation techniques to evaluate their power across various coefficient values.
+
+Under the Proportional-Hazard Assumption, we found that the overall log-rank test consistently demonstrated superior specificity compared to the weighted log-rank tests.
+
+When addressing the Non-Proportional-Hazard Assumption, our findings revealed nuances. In the first scenario with a stepwise exponential distribution, employing corresponding weighted log-rank tests for late and early effects resulted in higher specificity rates, highlighting the importance of selecting appropriate statistical methodologies. In the second scenario, where differing shape parameters $\gamma$ were assumed for treatment and control groups, the late weighted log-rank test emerged as the most effective, in line with expectations.
+
+In addition, the trend of increasing specificity with larger sample sizes persisted, emphasizing the critical role of adequate sample sizes in ensuring reliable statistical inference.
+
+Overall, our study offers valuable insights into choosing suitable statistical methodologies for time-to-event data analysis in clinical trials, especially under non-proportional hazard assumptions. These insights contribute to the continuous improvement of statistical practices in clinical research, ultimately enhancing the reliability and interpretability of trial results.
 
 <!-- ## Graph -->
 
