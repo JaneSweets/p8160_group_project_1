@@ -597,25 +597,25 @@ late_wei_iddf = late_wei_df |>
   mutate(Test = str_remove(Test, "_specificity"))
 
 late_wei_spe_graph = ggplot(late_wei_iddf, aes(x = id, y = Specificity, color = Test)) +
-  #geom_line() +
-  geom_smooth(se=FALSE) +
+  geom_line() +
+  #geom_smooth(se=FALSE) +
   labs(
     x = "id",
     y = "Specificity",
     title = "Specificity of Three Tests over combinations of parameters",
     color = "Test"
   )
-late_wei_spe_graph = late_wei_spe_graph +
-  geom_point(data = subset(late_wei_iddf, Specificity > 0.9), aes(color = Test), size = 2)
+# late_wei_spe_graph = late_wei_spe_graph +
+#   geom_point(data = subset(late_wei_iddf, Specificity > 0.9), aes(color = Test), size = 2)
 
-late_wei_spe_graph = late_wei_spe_graph +
-  geom_point(data = subset(late_wei_iddf, Specificity < 0.2), aes(color = Test), size = 1.5)
+# late_wei_spe_graph = late_wei_spe_graph +
+#   geom_point(data = subset(late_wei_iddf, Specificity < 0.2), aes(color = Test), size = 1.5)
 
-late_wei_spe_graph = late_wei_spe_graph + 
-  geom_vline(xintercept = 3, linetype = "dashed", color = "black", alpha = 0.5) +
-  annotate("text", x = 3.1, y = 1, label = "n=200, lambda=0.5,\ngamma0=5, gamma1=1.5", vjust = 0.2, hjust = 0, alpha = 0.7) +
-  geom_vline(xintercept = 1, linetype = "dashed", color = "black", alpha = 0.5) +
-  annotate("text", x = 1.1, y = 1, label = "n=200,\nlambda=0.8,\ngamma0=5,\ngamma1=1.5", vjust = 2, hjust = 0, alpha = 0.7) 
+# late_wei_spe_graph = late_wei_spe_graph + 
+#   geom_vline(xintercept = 3, linetype = "dashed", color = "black", alpha = 0.5) +
+#   annotate("text", x = 3.1, y = 1, label = "n=200, lambda=0.5,\ngamma0=5, gamma1=1.5", vjust = 0.2, hjust = 0, alpha = 0.7) +
+#   geom_vline(xintercept = 1, linetype = "dashed", color = "black", alpha = 0.5) +
+#   annotate("text", x = 1.1, y = 1, label = "n=200,\nlambda=0.8,\ngamma0=5,\ngamma1=1.5", vjust = 2, hjust = 0, alpha = 0.7) 
 
 late_wei_spe_graph
 ```
@@ -697,6 +697,29 @@ early_wei_df = early_wei_df |>
 ```{r}
 kable(early_wei_df, caption = "Specificity of 3 Log-Rank Tests based on NPH Assumption")
 ```
+
+```{r}
+early_wei_iddf = early_wei_df |>
+  mutate(id = seq_len(nrow(early_wei_df))) |>
+  select(id, everything()) |>
+  pivot_longer(cols = starts_with("test"), names_to = "Test", values_to = "Specificity") |>
+  mutate(Test = str_remove(Test, "_specificity"))
+
+early_wei_spe_graph = ggplot(early_wei_iddf, aes(x = id, y = Specificity, color = Test)) +
+  geom_line() +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "black", alpha = 0.5) +
+  annotate("text", x = 1.05, y = 1, label = "n=200,\nlambda0=1.0,\nlambda1=0.5,\ngamma=1.2", vjust = 1, hjust = 0, alpha = 0.7) +
+  geom_vline(xintercept = 4, linetype = "dashed", color = "black", alpha = 0.5) +
+  annotate("text", x = 4.05, y = 1, label = "n=100,\nlambda0=0.8,\nlambda1=0.5,\ngamma=1.2", vjust = 1, hjust = 0, alpha = 0.7) +
+  labs(
+    x = "id",
+    y = "Specificity",
+    title = "Specificity of Three Tests over combinations of parameters",
+    color = "Test"
+  )
+early_wei_spe_graph
+```
+
 
 # References
 Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in medicine, 24*(11), 1713–1723. https://doi.org/10.1002/sim.2059
