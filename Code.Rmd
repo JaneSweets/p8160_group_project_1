@@ -118,7 +118,7 @@ ph_simulate_func = function(n, baseline, lambda, gamma = NULL, coveff)
     censor_time = qexp(0.8, rate = lambda)
   } else if(baseline == "Weibull") {
     t = (-log(u) / (lambda * exp(x * coveff)))^(1 / gamma)
-    censor_time = qweibull(0.8, shape = gamma, scale = lambda)
+    censor_time = qweibull(0.8, shape = gamma, scale = 1 / lambda)
   }
   # Make event indicator variable applying administrative censoring
   d = as.numeric(t < censor_time)
@@ -318,7 +318,7 @@ The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as foll
 control_func = function(t) return(0.5)
 treatment_func = function(t) return(0.5 * (t < 1) + 0.3 * (t >= 1))
 
-hazard_plot(control_func, treatment_func, 5,
+hazard_plot(control_func, treatment_func, qexp(0.8, rate = 0.5),
             "Non-Proportional-Hazard Function for Late-Effect Exponential Models")
 ```
 
@@ -434,7 +434,7 @@ The hazard function under $\lambda_0=0.5,\,\lambda_1=0.3$ could be shown as foll
 control_func = function(t) return(0.5)
 treatment_func = function(t) return(0.5 * (t >= 1) + 0.3 * (t < 1))
 
-hazard_plot(control_func, treatment_func, 5,
+hazard_plot(control_func, treatment_func, qexp(0.8, rate = 0.5),
             "Non-Proportional-Hazard Function for Early-Effect Exponential Models")
 ```
 
@@ -510,12 +510,14 @@ Similarly, we can write the hazard function for the treatment arm as:
 $$h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$$
 We can derive that $$T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$$
 
-The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows:
+### Late Effect
+The hazard function under $\lambda=0.2,\,\gamma_0=3,\,\gamma_1=2.5$ could be shown as follows:
 ```{r, echo = FALSE}
-control_func = function(t) return(0.5 * 2 * t ^ (2 - 1))
-treatment_func = function(t) return(0.5 * 1.5 * t ^ (1.5 - 1))
+control_func = function(t) return(0.2 * 3 * t ^ (3 - 1))
+treatment_func = function(t) return(0.2 * 2.5 * t ^ (2.5 - 1))
 
-hazard_plot(control_func, treatment_func, 5,
+hazard_plot(control_func, treatment_func, 
+            qweibull(0.8, shape = 3, scale = 1 / 0.2),
             "Non-Proportional-Hazard Function for Late-Effect Weibull Models")
 ```
 
@@ -525,7 +527,7 @@ With the distribution function of survival times, we can write the simulation pr
 weibull_sim_func = function(n, lambda = 0.5, gamma0, gamma1)
 {
   # Set the administrative censoring time to guarantee a censor rate of 0.2 for control arm
-  censor_time = qweibull(0.8, shape = gamma0, scale = lambda)
+  censor_time = qweibull(0.8, shape = gamma0, scale = 1 / lambda)
   
   u0 = runif(n)
   t0 = (- log(u0) / lambda) ^ (1 / gamma0)
@@ -549,8 +551,8 @@ weibull_sim_func = function(n, lambda = 0.5, gamma0, gamma1)
 ```{r}
 late_wei_param_df = 
   expand.grid(iteration = c(1:50), n = c(100, 200), 
-              lambda = c(0.5, 0.8), gamma0 = c(3, 5), 
-              gamma1 = c(1.2, 1.5))
+              lambda = c(0.2, 0.4), gamma0 = c(4, 5), 
+              gamma1 = c(2.5, 3))
 
 late_wei_results =
   mapply(weibull_sim_func, n = late_wei_param_df$n,
@@ -616,6 +618,115 @@ late_wei_spe_graph = late_wei_spe_graph +
   annotate("text", x = 1.1, y = 1, label = "n=200,\nlambda=0.8,\ngamma0=5,\ngamma1=1.5", vjust = 2, hjust = 0, alpha = 0.7) 
 
 late_wei_spe_graph
+```
+
+### Early Effect
+The hazard function under $\lambda=0.5,\,\gamma_0=2,\,\gamma_1=1.5$ could be shown as follows:
+```{r, echo = FALSE}
+control_func = function(t) return(0.7)
+treatment_func = function(t) return(0.5 * 1.2 * t ^ (1.2 - 1))
+
+hazard_plot(control_func, treatment_func, 
+            qexp(0.8, rate = 0.7),
+            "Non-Proportional-Hazard Function for early-Effect Weibull Models")
+```
+
+With the distribution function of survival times, we can write the simulation process as follows.
+
+```{r}
+weiexp_sim_func = function(n, lambda0, lambda1 = 0.5, gamma)
+{
+  # Set the administrative censoring time to guarantee a censor rate of 0.2 for control arm
+  censor_time = qexp(0.8, rate = lambda0)
+  
+  u0 = runif(n)
+  t0 = - log(u0) / lambda0
+  u1 = runif(n)
+  t1 = (- log(u1) / lambda1) ^ (1 / gamma)
+  
+  # Make event indicator variable applying administrative censoring
+  d0 = as.numeric(t0 < censor_time)
+  d1 = as.numeric(t1 < censor_time)
+  t0 = pmin(t0, censor_time)
+  t1 = pmin(t1, censor_time)
+  
+  control_df = tibble(x = rep(0, n), t = t0, d = d0, 
+                      n, lambda0, lambda1, gamma)
+  treat_df = tibble(x = rep(1, n), t = t1, d = d1, 
+                    n, lambda0, lambda1, gamma)
+  return(rbind(control_df, treat_df))
+}
+```
+
+```{r}
+early_wei_param_df = 
+  expand.grid(iteration = c(1:50), n = c(100, 200), 
+              lambda0 = c(0.8, 1), lambda1 = 0.5, gamma = c(1.1, 1.2))
+
+early_wei_results =
+  mapply(weiexp_sim_func, n = early_wei_param_df$n,
+         lambda0 = early_wei_param_df$lambda0,
+         lambda1 = early_wei_param_df$lambda1, gamma = early_wei_param_df$gamma)
+
+early_wei_df = tibble()
+
+for(i in 1:ncol(early_wei_results))
+{
+  a = early_wei_results[, i]
+  early_wei_df = cbind.data.frame(x = a$x, t = a$t, d = a$d, n = a$n, 
+                                lambda0 = a$lambda0, lambda1 = a$lambda1,
+                                gamma = a$gamma) |> 
+    as_tibble() |> nest(data = c(x : d)) |> rbind(early_wei_df)
+}
+
+early_wei_df = early_wei_df |> nest(simulations = c(data))
+```
+
+Under different settings, we want to test the $H_0:$ there is no difference in survival between the treatment and control arm. Therefore, we use three different log-rank tests and compare the test power at the 0.05 significance level.
+
+\newpage
+
+```{r}
+early_wei_df = early_wei_df |>
+  mutate(specificity = map(simulations, specif_func)) |>
+  unnest(specificity) |>
+  select(-simulations)
+```
+
+\newpage
+```{r}
+kable(early_wei_df, caption = "Specificity of 3 Log-Rank Tests based on NPH Assumption")
+```
+
+```{r}
+early_wei_iddf = early_wei_df |>
+  mutate(id = seq_len(nrow(early_wei_df))) |>
+  select(id, everything()) |>
+  pivot_longer(cols = starts_with("test"), names_to = "Test", values_to = "Specificity") |>
+  mutate(Test = str_remove(Test, "_specificity"))
+
+early_wei_spe_graph = ggplot(early_wei_iddf, aes(x = id, y = Specificity, color = Test)) +
+  #geom_line() +
+  geom_smooth(se=FALSE) +
+  labs(
+    x = "id",
+    y = "Specificity",
+    title = "Specificity of Three Tests over combinations of parameters",
+    color = "Test"
+  )
+early_wei_spe_graph = early_wei_spe_graph +
+  geom_point(data = subset(early_wei_iddf, Specificity > 0.9), aes(color = Test), size = 2)
+
+early_wei_spe_graph = early_wei_spe_graph +
+  geom_point(data = subset(early_wei_iddf, Specificity < 0.2), aes(color = Test), size = 1.5)
+
+early_wei_spe_graph = early_wei_spe_graph + 
+  geom_vline(xintercept = 3, linetype = "dashed", color = "black", alpha = 0.5) +
+  annotate("text", x = 3.1, y = 1, label = "n=200, lambda=0.5,\ngamma0=5, gamma1=1.5", vjust = 0.2, hjust = 0, alpha = 0.7) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "black", alpha = 0.5) +
+  annotate("text", x = 1.1, y = 1, label = "n=200,\nlambda=0.8,\ngamma0=5,\ngamma1=1.5", vjust = 2, hjust = 0, alpha = 0.7) 
+
+early_wei_spe_graph
 ```
 
 If set the survival time for the control arm to follow exponential distribution, and set the hazard function for the treatment arm to be $\lambda$ after reaching $\lambda$, then the hazard function under $\lambda=0.5,\,\gamma=1.5$ could be shown as follows:
