@@ -52,7 +52,7 @@ This study compares the performance of three hypothesis tests for time-to-event 
 ```
 # Introduction
 
-In clinical trials, treatment efficacy is typically evaluated using time-to-event outcomes and the hazard ratio under the proportional hazards assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the proportional hazards assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events. To test the performance of various log-rank tests, we focus on both proportional hazards and non-proportional hazards based on exponential and Weibull distribution assumptions, and then evaluate the power of different parameters.
+In clinical trials, one common type health outcome used to assess the treatment effect is the time-to-event outcome, where the measurement is usually the hazard ratio under the proportional hazards assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the proportional hazards assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events. To test the performance of various log-rank tests, we focus on both proportional hazards and non-proportional hazards based on exponential and Weibull distribution assumptions, and then evaluate the power of different parameters.
 
 # Methods
 
