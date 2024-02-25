@@ -1,11 +1,21 @@
 ---
 title: "Group Project 1"
 author: "Huanyu Chen, Shaolei Ma, Ruiqi Xue"
-date: "2024-02-20"
 output:
   pdf_document:
     number_sections: true
+header-includes:
+  - \usepackage{titlesec}
 ---
+
+\titleformat{\section}[block]{\normalfont\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{0.4\baselineskip}{0.4\baselineskip}
+
+\titleformat{\subsection}[block]{\normalfont\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{0.2\baselineskip}{0.2\baselineskip}
+
+\titleformat{\subsubsection}[block]{\normalfont\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{0.1\baselineskip}{0.1\baselineskip}
 
 ```{r setup, include=FALSE}
 library(nph)
@@ -56,6 +66,22 @@ In clinical trials, one common type health outcome used to assess the treatment 
 
 # Methods
 
+## Log Rank Test
+The log-rank test statistic calculates the difference in observed versus expected failures over time.
+
+$$
+\chi^2 = \frac{[\sum_{t=1}^D (o_t-e_t)]^2}{\sum_{t=1}^D v_t}
+$$
+where $o_t$, observed number of deaths in treatment group at time $t$; $e_t$, expected number of deaths in treatment group at time $t$; $v_t$, variance of expected number of deaths in treatment group at time $t$.
+
+A weighted log-rank test incorporates a weight function $w_t$ that may change over
+time, allowing for the testing of differences between the survival curves under alternatives
+that differ from proportional hazards. 
+
+$$
+\chi^2 = \frac{[\sum_{t=1}^D w_t(o_t-e_t)]^2}{\sum_{t=1}^D w_tv_t}
+$$
+
 ## Proportional-Hazard Assumption
 
 Under proportional-hazards assumption, the hazard function (Cox model) can be written as: $$h(t|x)=h_0(t)exp(\beta'x)$$ where $t$ is the time, $x$ the vector of covariates, $\beta$ the vector of regression coefficients, $h_0(t)$ is the baseline hazard function. Then, the survival function is $$S(t|x)=exp[-H_0(t)exp(\beta'x)]$$ where$$H_0(t)=\int_0^th_0(u)du$$ Thus, the distribution function is $$F(t|x)=1-exp[-H_0(t)exp(\beta'x)]$$ Let $Y$ be a random variable with distribution function $F$, then $U=F(Y)\sim U(0,1),\,(1-U)\sim U(0,1)$, i.e. $$U=exp[-H_0(t)exp(\beta'x)]\sim U(0,1)$$ if $h_0(t)>0$ for all $t$, then $H_0$ can be inverted and the survival time $T$ of the model can be written as $$T=H_0^{-1}[-log(U)exp(-\beta'x)]$$ where $U\sim U(0,1)$.
@@ -80,13 +106,14 @@ Under Non-Proportional-Hazard Assumption, we still consider the exponential mode
 
 ### Piecewise Exponential Model
 
-**Late Effect:** We suppose the hazard function for the treatment arm is: $h(t|x=1)=\left\{ \begin{aligned} \lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1 \end{aligned} \right.$
+<!-- **Late Effect:**  -->
+We suppose the hazard function for the treatment arm is: $h(t|x=1)=\left\{ \begin{aligned} \lambda_0 & & t<1 \\ \lambda_1 & & t\geq 1 \end{aligned} \right.$
 
-Thus, $T=\left\{ \begin{aligned} -\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\ \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0) \end{aligned} \right.$
+Thus, $T=\left\{ \begin{aligned} -\lambda_0^{-1}log(U) & & U>exp(-\lambda_0) \\ \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0) \end{aligned} \right.$ where $U\sim U(0,1)$
 
-**Early Effect:** We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes: $h(t|x=1)=\left\{ \begin{aligned} \lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1 \end{aligned} \right.$
+<!-- **Early Effect:** We can use the similar simulation method to generate piecewise exponential models in which the treatment arm shows early effect. The hazard function becomes: $h(t|x=1)=\left\{ \begin{aligned} \lambda_0 & & t\geq 1 \\ \lambda_1 & & t<1 \end{aligned} \right.$ -->
 
-Thus, $T=\left\{ \begin{aligned} -\lambda_0^{-1}log(U) & & U\leq exp(-\lambda_0) \\ \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U>exp(-\lambda_0) \end{aligned} \right.$ where $U\sim U(0,1)$.
+<!-- Thus, $T=\left\{ \begin{aligned} -\lambda_0^{-1}log(U) & & U\leq exp(-\lambda_0) \\ \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U>exp(-\lambda_0) \end{aligned} \right.$ where $U\sim U(0,1)$. -->
 
 ### Weibull Model
 
