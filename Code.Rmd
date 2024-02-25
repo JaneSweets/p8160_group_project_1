@@ -628,7 +628,7 @@ treatment_func = function(t) return(0.5 * 1.2 * t ^ (1.2 - 1))
 
 hazard_plot(control_func, treatment_func, 
             qexp(0.8, rate = 0.7),
-            "Non-Proportional-Hazard Function for early-Effect Weibull Models")
+            "Non-Proportional-Hazard Function for Early-Effect Weibull Models")
 ```
 
 With the distribution function of survival times, we can write the simulation process as follows.
@@ -697,131 +697,6 @@ early_wei_df = early_wei_df |>
 ```{r}
 kable(early_wei_df, caption = "Specificity of 3 Log-Rank Tests based on NPH Assumption")
 ```
-
-```{r}
-early_wei_iddf = early_wei_df |>
-  mutate(id = seq_len(nrow(early_wei_df))) |>
-  select(id, everything()) |>
-  pivot_longer(cols = starts_with("test"), names_to = "Test", values_to = "Specificity") |>
-  mutate(Test = str_remove(Test, "_specificity"))
-
-early_wei_spe_graph = ggplot(early_wei_iddf, aes(x = id, y = Specificity, color = Test)) +
-  #geom_line() +
-  geom_smooth(se=FALSE) +
-  labs(
-    x = "id",
-    y = "Specificity",
-    title = "Specificity of Three Tests over combinations of parameters",
-    color = "Test"
-  )
-early_wei_spe_graph = early_wei_spe_graph +
-  geom_point(data = subset(early_wei_iddf, Specificity > 0.9), aes(color = Test), size = 2)
-
-early_wei_spe_graph = early_wei_spe_graph +
-  geom_point(data = subset(early_wei_iddf, Specificity < 0.2), aes(color = Test), size = 1.5)
-
-early_wei_spe_graph = early_wei_spe_graph + 
-  geom_vline(xintercept = 3, linetype = "dashed", color = "black", alpha = 0.5) +
-  annotate("text", x = 3.1, y = 1, label = "n=200, lambda=0.5,\ngamma0=5, gamma1=1.5", vjust = 0.2, hjust = 0, alpha = 0.7) +
-  geom_vline(xintercept = 1, linetype = "dashed", color = "black", alpha = 0.5) +
-  annotate("text", x = 1.1, y = 1, label = "n=200,\nlambda=0.8,\ngamma0=5,\ngamma1=1.5", vjust = 2, hjust = 0, alpha = 0.7) 
-
-early_wei_spe_graph
-```
-
-If set the survival time for the control arm to follow exponential distribution, and set the hazard function for the treatment arm to be $\lambda$ after reaching $\lambda$, then the hazard function under $\lambda=0.5,\,\gamma=1.5$ could be shown as follows:
-
-```{r, echo = FALSE}
-control_func = function(t) return(0.5)
-treatment_func = function(t)
-  return(0.5 * 1.5 * t ^ (1.5 - 1) * (0.5 * 1.5 * t ^ (1.5 - 1) < 0.5) +
-           (0.5 * 1.5 * t ^ (1.5 - 1) >= 0.5) * 0.5)
-
-hazard_plot(control_func, treatment_func, 3,
-            "Non-Proportional-Hazard Function for Early-Effect Models")
-```
-
-<!-- The hazard function becomes: -->
-<!-- $$h(t|x=1)=\left\{ -->
-<!-- \begin{aligned} -->
-<!-- \lambda & & t\geq \gamma^{-\frac{1}{\gamma-1}} \\ \lambda\gamma t^{\gamma-1} & & t<\gamma^{-\frac{1}{\gamma-1}} -->
-<!-- \end{aligned} -->
-<!-- \right.$$ -->
-<!-- Then, $$H(t|x=1)=\left\{ -->
-<!-- \begin{aligned} -->
-<!-- \lambda t^\gamma & & t<\gamma^{-\frac{1}{\gamma-1}} \\ \lambda\gamma^{-\frac{\gamma}{\gamma-1}}+\lambda(t-\gamma^{-\frac{1}{\gamma-1}}) & & t\geq \gamma^{-\frac{1}{\gamma-1}} -->
-<!-- \end{aligned} -->
-<!-- \right.$$ -->
-<!-- $$S(t|x=1)=exp(-H(t|x=1))=\left\{ -->
-<!-- \begin{aligned} -->
-<!-- exp(-\lambda t^\gamma) & & t<\gamma^{-\frac{1}{\gamma-1}} \\ exp(-\lambda\gamma^{-\frac{\gamma}{\gamma-1}}-\lambda(t-\gamma^{-\frac{1}{\gamma-1}})) & & t\geq \gamma^{-\frac{1}{\gamma-1}} -->
-<!-- \end{aligned} -->
-<!-- \right.$$ -->
-<!-- $$F(t|x=1)=1-S(t|x=1)=\left\{ -->
-<!-- \begin{aligned} -->
-<!-- 1-exp(-\lambda t^\gamma) & & t<\gamma^{-\frac{1}{\gamma-1}} \\ 1-exp(-\lambda\gamma^{-\frac{\gamma}{\gamma-1}}-\lambda(t-\gamma^{-\frac{1}{\gamma-1}})) & & t\geq \gamma^{-\frac{1}{\gamma-1}} -->
-<!-- \end{aligned} -->
-<!-- \right.$$ -->
-<!-- Let $1-U=F(t|x=1)$, then $(1-U)\sim U(0,1)$, $U=S(t|x=1)\sim U(0,1)$. Thus, -->
-<!-- $$T=\left\{ -->
-<!-- \begin{aligned} -->
-<!-- {(-\lambda_^{-1}log(U))}^{1/\gamma} & & U>exp(-\lambda_0) \\ -->
-<!-- \frac{\lambda_1-log(U)}{\lambda_0+\lambda_1} & & U\leq exp(-\lambda_0) -->
-<!-- \end{aligned} -->
-<!-- \right.$$ -->
-
-
-<!-- ```{r} -->
-<!-- weiexp_sim_func = function(n, lambda = 1, gamma) -->
-<!-- { -->
-<!--   # Set the administrative censoring time to guarantee a censor rate of 0.2 for control arm -->
-<!--   censor_time = qexp(0.8, rate = lambda) -->
-
-<!--   u0 = runif(n) -->
-<!--   t0 = - log(u0) / lambda -->
-<!--   u1 = runif(n) -->
-<!--   t1 = (- log(u1) / lambda) ^ (1 / gamma) -->
-
-<!--   # Make event indicator variable applying administrative censoring -->
-<!--   d0 = as.numeric(t0 < censor_time) -->
-<!--   d1 = as.numeric(t1 < censor_time) -->
-<!--   t0 = pmin(t0, censor_time) -->
-<!--   t1 = pmin(t1, censor_time) -->
-
-<!--   control_df = tibble(x = rep(0, n), t = t0, d = d0, n, lambda, gamma) -->
-<!--   treat_df = tibble(x = rep(1, n), t = t1, d = d1, n, lambda, gamma) -->
-<!--   return(rbind(control_df, treat_df)) -->
-<!-- } -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- early_wei_param_df =  -->
-<!--   expand.grid(iteration = c(1:50), n = c(50, 100, 200),  -->
-<!--               lambda = 0.75, gamma = 1.3) -->
-
-<!-- early_wei_results = -->
-<!--   mapply(weiexp_sim_func, n = early_wei_param_df$n, -->
-<!--          lambda = early_wei_param_df$lambda, gamma = early_wei_param_df$gamma) -->
-
-<!-- early_wei_df = tibble() -->
-
-<!-- for(i in 1:ncol(early_wei_results)) -->
-<!-- { -->
-<!--   a = early_wei_results[, i] -->
-<!--   early_wei_df = cbind.data.frame(x = a$x, t = a$t, d = a$d, n = a$n,  -->
-<!--                                 lambda = a$lambda, gamma = a$gamma) |>  -->
-<!--     as_tibble() |> nest(data = c(x : d)) |> rbind(early_wei_df) -->
-<!-- } -->
-
-<!-- early_wei_df = early_wei_df |> nest(simulations = c(data)) -->
-<!-- ``` -->
-
-<!-- Under different settings, we want to test the $H_0:$ there is no difference in survival between the treatment and control arm. Therefore, we use three different log-rank tests and compare the test power at the 0.05 significance level. -->
-
-<!-- ```{r} -->
-<!-- (early_wei_df =  -->
-<!--   early_wei_df |> mutate(power = map(simulations, pwr_func)) |> unnest(power)) -->
-<!-- ``` -->
 
 # References
 Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in medicine, 24*(11), 1713–1723. https://doi.org/10.1002/sim.2059
