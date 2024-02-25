@@ -79,7 +79,7 @@ time, allowing for the testing of differences between the survival curves under 
 that differ from proportional hazards. 
 
 $$
-\chi^2 = \frac{[\sum_{t=1}^D w_t(o_t-e_t)]^2}{\sum_{t=1}^D w_tv_t}
+\chi^2 = \frac{[\sum_{t=1}^D w_t(o_t-e_t)]^2}{\sum_{t=1}^D w_t^2 v_t}
 $$
 
 ## Proportional-Hazard Assumption
