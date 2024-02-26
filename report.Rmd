@@ -121,7 +121,11 @@ To simplify the problem, we assume the control and treatment arm share the same 
 
 Similarly, we can write the hazard function for the treatment arm as: $h(t|x=1)=\lambda\gamma_1 t^{(\gamma_1-1)}.$ We can derive that $T={(-\lambda^{-1}log(U))}^{1/\gamma_1}$.
 
-# Simulation Results
+## Simulation Setup
+
+Based on the above formulas, we can simulate the value of $T$ by setting $U$ for random number generation, where $U\sim U(0,1)$. To ensure its generalizability, we plug in different parameters and evaluate the test performance respectively for the data generated under different value settings.
+
+# Results
 
 ## Proportional-Hazard Assumption
 
