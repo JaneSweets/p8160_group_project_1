@@ -172,7 +172,7 @@ In conclusion, our study sheds light on the performance of three hypothesis test
 
 Under the Proportional-Hazard Assumption, we found that the overall log-rank test consistently demonstrated superior specificity compared to the weighted log-rank tests.
 
-When addressing the Non-Proportional-Hazard Assumption, our findings revealed nuances. In the first scenario with a stepwise exponential distribution, employing corresponding weighted log-rank tests for late and early effects resulted in higher specificity rates, highlighting the importance of selecting appropriate statistical methodologies. In the second scenario, where differing shape parameters $\gamma$ were assumed for treatment and control groups, the late weighted log-rank test emerged as the most effective, in line with expectations.
+When addressing the Non-Proportional-Hazard Assumption, our findings revealed nuances. In the first scenario with a stepwise exponential distribution, employing corresponding weighted log-rank tests for late and early effects resulted in higher specificity rates, highlighting the importance of selecting appropriate statistical methodologies. In the second scenario, where we assume Weibull distribution for the treatment arm, the different tests yield results correspondingly for late effect and early effect models.
 
 In addition, the trend of increasing specificity with larger sample sizes persisted, emphasizing the critical role of adequate sample sizes in ensuring reliable statistical inference.
 
