@@ -14,6 +14,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(knitr)
+library(patchwork)
 
 knitr::opts_chunk$set(
   fig.width = 8,
@@ -763,6 +764,10 @@ ph_wei_spe_graph
 early_pw_spe_graph
 late_pw_spe_graph
 
-par(mfrow=c(2,2))
+# Arrange the plots using the / operator
+combined_plots <- (ph_exp_power_graph + ph_wei_spe_graph) / (early_pw_spe_graph + late_pw_spe_graph)
+
+# Print the combined plot
+print(combined_plots)
 ```
 
