@@ -178,17 +178,19 @@ In the second scenario of dealing with the Non-Proportional Hazard Assumption, w
 \end{center}
 ```
 
-# Conclusion
+# Conclusion and Discussion
 
-In conclusion, our study sheds light on the performance of three hypothesis tests for time-to-event data analysis: the conventional log-rank test and two variations of the weighted log-rank test. We explored scenarios encompassing both proportional and non-proportional hazard functions, employing Monte Carlo simulation techniques to evaluate their power across various coefficient values.
+In conclusion, our study explored the performance of three hypothesis tests for time-to-event data analysis: the regular log-rank test and two variations of the weighted log-rank test addressing late and early effects, under both proportional and non-proportional hazard assumptions.
 
-Under the Proportional-Hazard Assumption, we found that the overall log-rank test consistently demonstrated superior specificity compared to the weighted log-rank tests.
+Under the Proportional Hazard Assumption, we found that the overall log-rank test consistently demonstrated superior specificity compared to the weighted log-rank tests.
 
-When addressing the Non-Proportional-Hazard Assumption, our findings revealed nuances. In the first scenario with a stepwise exponential distribution, employing corresponding weighted log-rank tests for late and early effects resulted in higher specificity rates, highlighting the importance of selecting appropriate statistical methodologies. In the second scenario, where we assume Weibull distribution for the treatment arm, the different tests yield results correspondingly for late effect and early effect models.
+And under the Non-Proportional Hazard Assumption, our findings revealed consistent results. In the first scenario with a piece-wise exponential distribution, employing corresponding weighted log-rank tests for late and early effects resulted in higher specificity rates. In the second scenario, where we assume Weibull distribution for the treatment arm, the different tests yield results correspondingly for late effect and early effect models, which is aligned with the previous result. This highlights the importance of selecting appropriate statistical tests in problem solving.
 
 In addition, the trend of increasing specificity with larger sample sizes persisted, emphasizing the critical role of adequate sample sizes in ensuring reliable statistical inference.
 
-Overall, our study offers valuable insights into choosing suitable statistical methodologies for time-to-event data analysis in clinical trials, especially under non-proportional hazard assumptions. These insights contribute to the continuous improvement of statistical practices in clinical research, ultimately enhancing the reliability and interpretability of trial results.
+Besides, when considering the measure of log-rank test performance, there could be other instrument, for example, the test power. However, after practice in software, we found that it is hard to be obtained by the test result object directly, when applying the log-rank test by calling the test function. The calculation of power through other ways and other measure of test performance are expected to be explored.
+
+Overall, this study offers valuable insights into choosing suitable statistical methodologies for time-to-event data analysis in clinical trials, with careful choice of models using Monte Carlo simulation. These insights contribute to the continuous improvement of statistical practices in clinical research, ultimately enhancing the reliability and interpretability of trial results.
 
 <!-- ## Graph -->
 
