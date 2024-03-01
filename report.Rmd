@@ -62,7 +62,7 @@ This study compares the performance of three hypothesis tests for time-to-event 
 ```
 # Introduction
 
-In clinical trials, one common type health outcome used to assess the treatment effect is the time-to-event outcome, where the measurement is usually the hazard ratio under the proportional hazards assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the proportional hazards assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events. To test the performance of various log-rank tests, we focus on both proportional hazards and non-proportional hazards based on exponential and Weibull distribution assumptions, and then evaluate the power of different parameters.
+In clinical trials, one common type health outcome used to assess the treatment effect is the time-to-event outcome, where the measurement is usually the hazard ratio under the proportional hazards assumption. The log-rank test is used to compare observed and expected event counts. However, in real-world scenarios, the proportional hazards assumption may not always hold, requiring statistical adjustments. To address this issue, researchers have proposed weighted log-rank tests that incorporate parameters for different emphases on early or late events. In this project, the scientific question we aim to address is that given assumptions of proportional hazards and non-proportional hazard, which type of log-rank test is the most suitable to use, based on the simulation of the survival distributions. And we give the answer by comparing the performance of different log-rank tests.
 
 # Methods
 
@@ -266,7 +266,7 @@ Overall, our study offers valuable insights into choosing suitable statistical m
 
 <!-- ``` -->
 
-# Referrence
+# References
 
 Austin, P. C. (2012). Generating survival times to simulate Cox proportional hazards models with time-varying covariates. Statistics in Medicine, 31(29), 3946--3958. <https://doi.org/10.1002/sim.5452>
 
